@@ -31,17 +31,17 @@ print("Time")
 cmdNumber = "tshark -r " + fileName +" -T fields -e tcp.stream | sort | uniq | wc -l"
 p = Popen(cmdNumber, shell=True, stdin=PIPE, stdout=PIPE, stderr=STDOUT, close_fds=True)
 totalStreams = int(p.stdout.read().strip())-1
-print("# of Streams")
+print("# of Streams= " + str(totalStreams))
 
 
-cmd = 'tshark -r ' + fileName +' -Nn -T fields -e frame.time_epoch -e ip.dst -e ip.dst_host -Y "tcp.dstport == 443" > output.csv'
+cmd = 'tshark -r ' + fileName +' -Nn -T fields -e frame.time_epoch -e ip.dst -e ip.dst_host -Y "tcp.dstport == 443" >> output.csv'
 
 p = Popen(cmd, shell=True, stdin=PIPE, stdout=PIPE, stderr=STDOUT, close_fds=True)
 
 time.sleep(2)
 
 
-cmd = 'tshark -r ' + fileName +' -Nn -T fields -e frame.time_epoch -e ip.dst -e ip.dst_host -Y "tcp" > output2.csv'
+cmd = 'tshark -r ' + fileName +' -Nn -T fields -e frame.time_epoch -e ip.dst -e ip.dst_host -Y "tcp" >> output2.csv'
 
 p = Popen(cmd, shell=True, stdin=PIPE, stdout=PIPE, stderr=STDOUT, close_fds=True)
 
@@ -69,7 +69,7 @@ while counter < totalStreams:
     bigArray.append(out3)
     counter += 1
 
-with open(csvName, "wb") as f:
+with open(csvName, "a") as f:
     writer = csv.writer(f)
     writer.writerows(bigArray)
 
