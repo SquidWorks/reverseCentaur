@@ -226,8 +226,6 @@ def enrichToDictionary(csvName):
 def dictionaryEnricher(magicDictionary):
     SUPAHARRAY = []
 
-
-
     for i in magicDictionary:
 
         #print(i)
@@ -248,6 +246,7 @@ def dictionaryEnricher(magicDictionary):
         framesToList = []
         bytesToList = []
         bytesPerFrameToList = []
+        timeList = []
 
         # [0] = subdomainBigram,
         # [1] = subdomainEntropy,
@@ -298,8 +297,12 @@ def dictionaryEnricher(magicDictionary):
             bytesPerFrameToList.append(float(j[17]))
             framesTotalTotal += float(j[18])
             bytesTotalTotal += float(j[19])
+            timeList.append(float(j[20]))
+
 
         ipAddress = j[2]
+        deltaTimeList = [j-i for i, j in zip(timeList[:-1], timeList[1:])]
+
 
         listOfArrays= [ subdomainBigramAvgList,
                         subdomainEntropyAvgList,
@@ -310,7 +313,8 @@ def dictionaryEnricher(magicDictionary):
                         bytesPerFrameFromList,
                         framesToList,
                         bytesToList,
-                        bytesPerFrameToList]
+                        bytesPerFrameToList,
+                        deltaTimeList]
 
 
 
@@ -327,6 +331,9 @@ def dictionaryEnricher(magicDictionary):
         # [9] = bytesPerFrame
         for i in listOfArrays:
             listOfListOfFeatures = [[]]*9
+            if not i:
+                i = [0] # I should investigate why empty arrays are being passed, but nah.
+
             listOfListOfFeatures[0] = float(sum(i)/(len(i))) #Average
             listOfListOfFeatures[1] = min(i) #min
             listOfListOfFeatures[2] = max(i) #max
@@ -377,7 +384,7 @@ def dictionaryEnricher(magicDictionary):
 
     return SUPAHARRAY
 
-def enrichedArrayToDataFrame(SUPAHARRAY):
+def enrichedArrayToDataFrame(SUPAHARRAY, labelFlag):
     df = pd.DataFrame(SUPAHARRAY)
     cols = [
             'domainName',
@@ -479,123 +486,15 @@ def enrichedArrayToDataFrame(SUPAHARRAY):
             'bytesPerFrameToVariation',
             'bytesPerFrameToSkew',
             'bytesPerFrameToKurtosis',
-            'framesFromTotal',
-            'bytesFromTotal',
-            'framesToTotal',
-            'bytesToTotal',
-            'framesTotalTotal',
-            'bytesTotalTotal'
-        ]
-
-    df.columns = cols
-
-    df.to_csv(outputFile, mode='a', header=True, sep='\t')
-
-    print(df)
-
-def enrichedArrayToDataFrameTime(SUPAHARRAY, labelFlag):
-    print("EnAR2DaFr")
-    df = pd.DataFrame(SUPAHARRAY)
-    cols = [
-            'domainName',
-            'ipAddress',
-            'label',
-            'dataset',
-            'owner',
-            'count',
-            'fqdns',
-            'domainEntropy',
-            'domainBigram',
-            'subdomainBigramAvg',
-            'subdomainBigramMin',
-            'subdomainBigramMax',
-            'subdomainBigramMode',
-            'subdomainBigramModeCount',
-            'subdomainBigramEntropy',
-            'subdomainBigramVariation',
-            'subdomainBigramSkew',
-            'subdomainBigramKurtosis',
-            'subdomainEntropyAvg',
-            'subdomainEntropyMin',
-            'subdomainEntropyMax',
-            'subdomainEntropyMode',
-            'subdomainEntropyModeCount',
-            'subdomainEntropyEntropy',
-            'subdomainEntropyVariation',
-            'subdomainEntropySkew',
-            'subdomainEntropyKurtosis',
-            'subdomainLengthAvg',
-            'subdomainLengthMin',
-            'subdomainLengthMax',
-            'subdomainLengthMode',
-            'subdomainLengthModeCount',
-            'subdomainLengthEntropy',
-            'subdomainLengthVariation',
-            'subdomainLengthSkew',
-            'subdomainLengthKurtosis',
-            'subdomainDepthAvg',
-            'subdomainDepthMin',
-            'subdomainDepthMax',
-            'subdomainDepthMode',
-            'subdomainDepthModeCount',
-            'subdomainDepthEntropy',
-            'subdomainDepthVariation',
-            'subdomainDepthSkew',
-            'subdomainDepthKurtosis',
-            'framesFromAvg',
-            'framesFromMin',
-            'framesFromMax',
-            'framesFromMode',
-            'framesFromModeCount',
-            'framesFromEntropy',
-            'framesFromVariation',
-            'framesFromSkew',
-            'framesFromKurtosis',
-            'bytesFromAvg',
-            'bytesFromAMin',
-            'bytesFromAMax',
-            'bytesFromAMode',
-            'bytesFromAModeCount',
-            'bytesFromAEntropy',
-            'bytesFromAVariation',
-            'bytesFromASkew',
-            'bytesFromAKurtosis',
-            'bytesPerFrameFromAvg',
-            'bytesPerFrameFromMin',
-            'bytesPerFrameFromMax',
-            'bytesPerFrameFromMode',
-            'bytesPerFrameFromModeCount',
-            'bytesPerFrameFromEntropy',
-            'bytesPerFrameFromVariation',
-            'bytesPerFrameFromSkew',
-            'bytesPerFrameFromKurtosis',
-            'framesToAvg',
-            'framesToMin',
-            'framesToMax',
-            'framesToMode',
-            'framesToModeCount',
-            'framesToEntropy',
-            'framesToVariation',
-            'framesToSkew',
-            'framesToKurtosis',
-            'bytesToAvg',
-            'bytesToMin',
-            'bytesToMax',
-            'bytesToMode',
-            'bytesToModeCount',
-            'bytesToEntropy',
-            'bytesToVariation',
-            'bytesToSkew',
-            'bytesToKurtosis',
-            'bytesPerFrameToAvg',
-            'bytesPerFrameToMin',
-            'bytesPerFrameToMax',
-            'bytesPerFrameToMode',
-            'bytesPerFrameToModeCount',
-            'bytesPerFrameToEntropy',
-            'bytesPerFrameToVariation',
-            'bytesPerFrameToSkew',
-            'bytesPerFrameToKurtosis',
+            'timeDeltaAvg',
+            'timeDeltaMin',
+            'timeDeltaMax',
+            'timeDeltaMode',
+            'timeDeltaModeCount',
+            'timeDeltaEntropy',
+            'timeDeltaVariation',
+            'timeDeltaSkew',
+            'timeDeltaKurtosis',
             'framesFromTotal',
             'bytesFromTotal',
             'framesToTotal',
@@ -621,6 +520,8 @@ parser.add_argument('-t','--time', help='Description for time argument', require
 parser.add_argument('-l','--label', help='Description for write argument', required=True)
 parser.add_argument('-d','--dataset', help='Description for write argument', required=True)
 parser.add_argument('-o','--owner', help='Description for write argument', required=True)
+parser.add_argument('-a','--append', help='Append to -w file', required=False, action='store_true')
+
 
 args = vars(parser.parse_args())
 
@@ -645,13 +546,19 @@ likelihoodsMake()
 
 domain2ip = dictionaryMaker(csvOne, csvTwo)
 
+if args['append']:
+        print(args['append'])
+        labelFlag = 0
+else:
+        labelFlag = 1
+
 if timer == 'std':
 
     magicDictionary = enrichToDictionary(csvName)
 
     SUPAHARRAY = dictionaryEnricher(magicDictionary)
 
-    enrichedArrayToDataFrame(SUPAHARRAY)
+    enrichedArrayToDataFrame(SUPAHARRAY, labelFlag)
 
 else:
     with open(csvName, 'rb') as f:
@@ -662,7 +569,7 @@ else:
     print("STARTING")
     print(startTime)
     timeArray = []
-    labelFlag = 1
+
     for i in bigArray:
         #print(i)
         if startTime + float(timer) > float(i[10]):
@@ -676,7 +583,7 @@ else:
 
             SUPAHARRAY = dictionaryEnricher(magicDictionary)
 
-            enrichedArrayToDataFrameTime(SUPAHARRAY, labelFlag)
+            enrichedArrayToDataFrame(SUPAHARRAY, labelFlag)
             #print(timeArray)
             timeArray = []
 
