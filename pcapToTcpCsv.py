@@ -103,7 +103,8 @@ def cleanAndReadPcap(fileName):
     for files in fixedFiles:
         print(files)
         readPcapToCSV(files, csvName, 5)
-        os.remove(files)
+        if files != args['read']:
+            os.remove(files)
 
 
 
