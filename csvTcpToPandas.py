@@ -5,6 +5,7 @@ import argparse
 from collections import Counter
 import math
 import time
+import glob
 from scipy import stats
 
 def dictionaryMaker(csvOne, csvTwo):
@@ -301,6 +302,10 @@ def dictionaryEnricher(magicDictionary):
 
 
         ipAddress = j[2]
+        if target:
+            if target != ipAddress:
+                break
+
         deltaTimeList = [j-i for i, j in zip(timeList[:-1], timeList[1:])]
 
 
@@ -510,6 +515,48 @@ def enrichedArrayToDataFrame(SUPAHARRAY, labelFlag):
         df.to_csv(outputFile, mode='a', header=False, sep='\t')
 
     print(df)
+def fileLoad(csvName,timer, labelFlag, target):
+    if timer == 'std':
+
+        magicDictionary = enrichToDictionary(csvName)
+
+        SUPAHARRAY = dictionaryEnricher(magicDictionary)
+
+        enrichedArrayToDataFrame(SUPAHARRAY, labelFlag)
+
+    else:
+        with open(csvName, 'rb') as f:
+            reader = csv.reader(f)
+            bigArray = list(reader)
+
+        startTime = float(bigArray[0][10])
+        print("STARTING")
+        print(startTime)
+        timeArray = []
+
+        for i in bigArray:
+            #print(i)
+            if startTime + float(timer) > float(i[10]):
+                timeArray.append(i)
+
+            else:
+                with open("tmp.csv", "w") as f:
+                        writer = csv.writer(f)
+                        writer.writerows(timeArray)
+                magicDictionary = enrichToDictionary("tmp.csv")
+
+                SUPAHARRAY = dictionaryEnricher(magicDictionary)
+
+                enrichedArrayToDataFrame(SUPAHARRAY, labelFlag)
+                #print(timeArray)
+                timeArray = []
+
+                labelFlag = 0
+                startTime = startTime + 10
+
+    end = time.time()
+    print(end - start)
+
 
 start = time.time()
 
@@ -517,10 +564,12 @@ parser = argparse.ArgumentParser(description="provide the parameters to make the
 parser.add_argument("-r", "--read", help='Description for readFile argument', required=True)
 parser.add_argument('-w','--write', help='Description for write argument', required=True)
 parser.add_argument('-t','--time', help='Description for time argument', required=False, default='std')
+parser.add_argument('-f','--file', help='Description for time argument', required=False, default='csv')
 parser.add_argument('-l','--label', help='Description for write argument', required=True)
 parser.add_argument('-d','--dataset', help='Description for write argument', required=True)
 parser.add_argument('-o','--owner', help='Description for write argument', required=True)
 parser.add_argument('-a','--append', help='Append to -w file', required=False, action='store_true')
+parser.add_argument('-z','--target', help='Append to -w file', required=False)
 
 
 args = vars(parser.parse_args())
@@ -534,6 +583,8 @@ csvTwo = 'output2.csv'
 label = args['label']
 dataset = args['dataset']
 owner = args['owner']
+target = args['target']
+
 
 outputFile = args['write']
 
@@ -552,43 +603,12 @@ if args['append']:
 else:
         labelFlag = 1
 
-if timer == 'std':
+if args['file'] == "dir":
+    print("dir")
+    csvFiles = glob.glob(csvName+ "/*.*")
+    for csvFile in csvFiles:
+        fileLoad(csvFile, timer, labelFlag, target)
 
-    magicDictionary = enrichToDictionary(csvName)
+elif args['file'] == "file":
+    fileLoad(csvName, timer, labelFlag, target)
 
-    SUPAHARRAY = dictionaryEnricher(magicDictionary)
-
-    enrichedArrayToDataFrame(SUPAHARRAY, labelFlag)
-
-else:
-    with open(csvName, 'rb') as f:
-        reader = csv.reader(f)
-        bigArray = list(reader)
-
-    startTime = float(bigArray[0][10])
-    print("STARTING")
-    print(startTime)
-    timeArray = []
-
-    for i in bigArray:
-        #print(i)
-        if startTime + float(timer) > float(i[10]):
-            timeArray.append(i)
-
-        else:
-            with open("tmp.csv", "w") as f:
-                    writer = csv.writer(f)
-                    writer.writerows(timeArray)
-            magicDictionary = enrichToDictionary("tmp.csv")
-
-            SUPAHARRAY = dictionaryEnricher(magicDictionary)
-
-            enrichedArrayToDataFrame(SUPAHARRAY, labelFlag)
-            #print(timeArray)
-            timeArray = []
-
-            labelFlag = 0
-            startTime = startTime + 10
-
-end = time.time()
-print(end - start)
