@@ -112,9 +112,9 @@ def cleanAndReadPcap(fileName):
 start = time.time()
 
 parser = argparse.ArgumentParser(description="provide the parameters to make the file run")
-parser.add_argument("-r", "--read", help='Description for readFile argument', required=True)
-parser.add_argument('-w','--write', help='Description for write argument', required=True)
-parser.add_argument('-t','--type', help='Description for live argument', required=False, default='file')
+parser.add_argument("-r", "--read", help='Enter the filename of the packet capture to read', required=True)
+parser.add_argument('-w','--write', help='Enter the filename of the csv to write', required=True)
+parser.add_argument('-t','--type', help='Enter type of file: "file", "live", or "dir"', required=False, default='file')
 
 args = vars(parser.parse_args())
 

@@ -126,101 +126,41 @@ def domainEnrich(domainNameFull):
 
     field = domainName.translate(None, '0123456789-') # PROBLEM CHILD
     domainBigram =  bigramQuery(field)
-    return [subdomainDepth, subdomainLength, subdomainEntropy, subdomainBigram, domainEntropy, domainBigram, subdomainName, domainNameJoined]
+    return [subdomainDepth, subdomainLength, subdomainEntropy, subdomainBigram, domainEntropy, domainBigram, domainNameJoined]
 
 def enrichToDictionary(csvName):
+
     with open(csvName, 'rb') as f:
         reader = csv.reader(f)
         bigArray = list(reader)
-
     magicDictionary = {}
-
     for i in bigArray:
+        splitArray = i[0].split("\t")
 
-        ipAddress = i[2]
-        #print(i)
-        #We need to create domain fields real quick
-        newI = i
-
-        if domain2ip[i[2]] != {}:
-            if domain2ip[i[2]][0].split(".")[-1].isdigit():
-
-                print("WE IN HERE")
-
-                subdomainName = ''
-                domainNameAndTld = 'digit'
-                subdomainDepth = 0
-                subdomainLength = 0
-                subdomainEntropy = 0
-                subdomainBigram = 0
-                domainEntropy = 0
-                domainBigram = 0
-
-            else:
-                domainNameFull = domain2ip[i[2]][0]
-
-                enriched = domainEnrich(domainNameFull)
-                #return [subdomainDepth, subdomainLength, subdomainEntropy, subdomainBigram, domainEntropy, domainBigram, subdomainName, domainNameJoined]
-                subdomainDepth = enriched[0]
-                subdomainLength = enriched[1]
-                subdomainEntropy = enriched[2]
-                subdomainBigram = enriched[3]
-                domainEntropy = enriched[4]
-                domainBigram = enriched[5]
-                subdomainName = enriched[6]
-                domainNameJoined = enriched[7]
+        dnsRespNameFull = splitArray[1]
+        enriched = domainEnrich(dnsRespNameFull)
 
 
+        if splitArray[4] != "":
+                dnsRespPrimaryNameFull = splitArray[4]
+
+                enrichedPrimary = domainEnrich(dnsRespPrimaryNameFull)
+
+                splitArray.insert(5, enrichedPrimary)
         else:
-            subdomainName = ''
+            splitArray.insert(5, [0]*7) # if there is no primaryResponseName, make everything zeros
+        splitArray.insert(2, enriched)
 
-            domainNameJoined = 'none'
-            subdomainDepth = 0
-            subdomainLength = 0
-            subdomainEntropy = 0
-            subdomainBigram = 0
-            domainEntropy = 0
-            domainBigram = 0
-
-
-
-
-        try: bytesPerFrameFrom = float(i[5])/float(i[4])
-        except:
-            bytesPerFrameFrom = 0
-
-        try: bytesPerFrameTo = float(i[7])/float(i[6])
-        except:
-            bytesPerFrameTo = 0
-
-        newI.insert(4, subdomainDepth)
-        newI.insert(4, subdomainLength)
-        newI.insert(4, subdomainEntropy)
-        newI.insert(4, subdomainBigram)
-        newI.insert(4, domainEntropy)
-        newI.insert(4, domainBigram)
-        newI.insert(4, subdomainName)
-        newI.insert(4, domainNameJoined)
-        newI.insert(14, bytesPerFrameFrom)
-        newI.insert(16, bytesPerFrameTo)
-
-        dictKey = i[0] + "x" + domainNameJoined
+        dictKey = splitArray[0] + "x" + enriched[-1]
         if dictKey in magicDictionary:
 
-
-
-            #print(magicDictionary[dictKey])
-            #print("AAA")
-            #print(i)
-            magicDictionary[dictKey].append(newI)
-
-
+            magicDictionary[dictKey].append(splitArray)
 
 
         else:
 
 
-            magicDictionary[dictKey]= [newI]
+            magicDictionary[dictKey]= [splitArray]
 
     return magicDictionary
 
@@ -235,18 +175,30 @@ def dictionaryEnricher(magicDictionary):
         statisticsArray = []
 
         fqdns = 0
+        primaryfqdns = 0
+        ips = 0
         count = 0
+
         subDomainArray = []
+        primarySubDomainArray = []
+        ipArray = []
+
         subdomainBigramAvgList = []
         subdomainEntropyAvgList = []
         subdomainLengthAvgList = []
         subdomainDepthAvgList = []
-        framesFromList = []
-        bytesFromList = []
-        bytesPerFrameFromList = []
-        framesToList = []
-        bytesToList = []
-        bytesPerFrameToList = []
+
+        primarySubdomainDepthAvgList= []
+        primarySubdomainLengthAvgList= []
+        primarySubdomainEntropyAvgList= []
+        primarySubdomainBigramAvgList= []
+        primaryDomainEntropy = []
+        primaryDomainBigram = []
+
+
+        dataLengthList = []
+
+
         timeList = []
 
         # [0] = subdomainBigram,
@@ -261,48 +213,51 @@ def dictionaryEnricher(magicDictionary):
         # [9] = bytesPerFrame
 
 
-        framesFromTotal = 0
-        bytesFromTotal = 0
-        framesToTotal = 0
-        bytesToTotal = 0
-        framesTotalTotal = 0
-        bytesTotalTotal = 0
+        dataLengthTotal = 0
 
         for j in magicDictionary[i]:
-            print(j)
+            ##print(i)
+            #print(j)
             count += 1
-            domainName = j[4]
+            domainName = j[2][6]
 
 
 
-            if j[5] not in subDomainArray:
+            if j[1] not in subDomainArray:
                 fqdns += 1
-
-            domainBigram = j[6]
-            domainEntropy = j[7]
+                subDomainArray.append(j[1])
 
 
+            subdomainDepthAvgList.append(j[2][0])
+            subdomainLengthAvgList.append(j[2][1])
+            subdomainEntropyAvgList.append(j[2][2])
+            subdomainBigramAvgList.append(j[2][3])
+            domainEntropy = (j[2][4])
+            domainBigram = (j[2][5])
 
-            subdomainBigramAvgList.append(j[8])
-            subdomainEntropyAvgList.append(j[9])
-            subdomainLengthAvgList.append(j[10])
-            subdomainDepthAvgList.append(j[11])
-            framesFromList.append(float(j[12]))
-            framesFromTotal += float(j[12])
-            bytesFromList.append(float(j[13]))
-            bytesFromTotal += float(j[13])
-            bytesPerFrameFromList.append(float(j[14]))
-            framesToList.append(float(j[15]))
-            framesToTotal += float(j[15])
-            bytesToList.append(float(j[16]))
-            bytesToTotal += float(j[16])
-            bytesPerFrameToList.append(float(j[17]))
-            framesTotalTotal += float(j[18])
-            bytesTotalTotal += float(j[19])
-            timeList.append(float(j[20]))
+            if j[3] not in ipArray:
+                ips += 1
+                ipArray.append(j[3])
+
+            dataLengthList.append(float(j[4]))
+            dataLengthTotal += float(j[4])
+
+            if j[5] not in primarySubDomainArray:
+                primaryfqdns += 1
+                primarySubDomainArray.append(j[5])
+
+            primarySubdomainDepthAvgList.append(j[2][0])
+            primarySubdomainLengthAvgList.append(j[2][1])
+            primarySubdomainEntropyAvgList.append(j[2][2])
+            primarySubdomainBigramAvgList.append(j[2][3])
+            primaryDomainEntropy = (j[2][4])
+            primaryDomainBigram = (j[2][5])
 
 
-        ipAddress = j[2]
+            timeList.append(float(j[7]))
+
+
+        ipAddress = j[0]
         if target:
             if target != ipAddress:
                 break
@@ -314,15 +269,12 @@ def dictionaryEnricher(magicDictionary):
                         subdomainEntropyAvgList,
                         subdomainLengthAvgList,
                         subdomainDepthAvgList,
-                        framesFromList,
-                        bytesFromList,
-                        bytesPerFrameFromList,
-                        framesToList,
-                        bytesToList,
-                        bytesPerFrameToList,
+                        primarySubdomainBigramAvgList,
+                        primarySubdomainEntropyAvgList,
+                        primarySubdomainLengthAvgList,
+                        primarySubdomainDepthAvgList,
+                        dataLengthList,
                         deltaTimeList]
-
-
 
 
         # [0] = subdomainBigram,
@@ -370,6 +322,7 @@ def dictionaryEnricher(magicDictionary):
         dataset,
         owner,
         count,
+        ips,
         fqdns,
         domainEntropy,
         domainBigram,
@@ -378,12 +331,9 @@ def dictionaryEnricher(magicDictionary):
         tempArray.extend(flatList)
 
         tempArray.extend((
-        framesFromTotal,
-        bytesFromTotal,
-        framesToTotal,
-        bytesToTotal,
-        framesTotalTotal,
-        bytesTotalTotal
+        primaryDomainEntropy,
+        primaryDomainBigram,
+        dataLengthTotal
         ))
 
         SUPAHARRAY.append(tempArray)
@@ -399,6 +349,7 @@ def enrichedArrayToDataFrame(SUPAHARRAY, labelFlag):
             'dataset',
             'owner',
             'count',
+            'ipd',
             'fqdns',
             'domainEntropy',
             'domainBigram',
@@ -438,60 +389,51 @@ def enrichedArrayToDataFrame(SUPAHARRAY, labelFlag):
             'subdomainDepthVariation',
             'subdomainDepthSkew',
             'subdomainDepthKurtosis',
-            'framesFromAvg',
-            'framesFromMin',
-            'framesFromMax',
-            'framesFromMode',
-            'framesFromModeCount',
-            'framesFromEntropy',
-            'framesFromVariation',
-            'framesFromSkew',
-            'framesFromKurtosis',
-            'bytesFromAvg',
-            'bytesFromAMin',
-            'bytesFromAMax',
-            'bytesFromAMode',
-            'bytesFromAModeCount',
-            'bytesFromAEntropy',
-            'bytesFromAVariation',
-            'bytesFromASkew',
-            'bytesFromAKurtosis',
-            'bytesPerFrameFromAvg',
-            'bytesPerFrameFromMin',
-            'bytesPerFrameFromMax',
-            'bytesPerFrameFromMode',
-            'bytesPerFrameFromModeCount',
-            'bytesPerFrameFromEntropy',
-            'bytesPerFrameFromVariation',
-            'bytesPerFrameFromSkew',
-            'bytesPerFrameFromKurtosis',
-            'framesToAvg',
-            'framesToMin',
-            'framesToMax',
-            'framesToMode',
-            'framesToModeCount',
-            'framesToEntropy',
-            'framesToVariation',
-            'framesToSkew',
-            'framesToKurtosis',
-            'bytesToAvg',
-            'bytesToMin',
-            'bytesToMax',
-            'bytesToMode',
-            'bytesToModeCount',
-            'bytesToEntropy',
-            'bytesToVariation',
-            'bytesToSkew',
-            'bytesToKurtosis',
-            'bytesPerFrameToAvg',
-            'bytesPerFrameToMin',
-            'bytesPerFrameToMax',
-            'bytesPerFrameToMode',
-            'bytesPerFrameToModeCount',
-            'bytesPerFrameToEntropy',
-            'bytesPerFrameToVariation',
-            'bytesPerFrameToSkew',
-            'bytesPerFrameToKurtosis',
+            'primarySubdomainBigramAvg',
+            'primarySubdomainBigramMin',
+            'primarySubdomainBigramMax',
+            'primarySubdomainBigramMode',
+            'primarySubdomainBigramModeCount',
+            'primarySubdomainBigramEntropy',
+            'primarySubdomainBigramVariation',
+            'primarySubdomainBigramSkew',
+            'primarySubdomainBigramKurtosis',
+            'primarySubdomainEntropyAvg',
+            'primarySubdomainEntropyMin',
+            'primarySubdomainEntropyMax',
+            'primarySubdomainEntropyMode',
+            'primarySubdomainEntropyModeCount',
+            'primarySubdomainEntropyEntropy',
+            'primarySubdomainEntropyVariation',
+            'primarySubdomainEntropySkew',
+            'primarySubdomainEntropyKurtosis',
+            'primarySubdomainLengthAvg',
+            'primarySubdomainLengthMin',
+            'primarySubdomainLengthMax',
+            'primarySubdomainLengthMode',
+            'primarySubdomainLengthModeCount',
+            'primarySubdomainLengthEntropy',
+            'primarySubdomainLengthVariation',
+            'primarySubdomainLengthSkew',
+            'primarySubdomainLengthKurtosis',
+            'primarySubdomainDepthAvg',
+            'primarySubdomainDepthMin',
+            'primarySubdomainDepthMax',
+            'primarySubdomainDepthMode',
+            'primarySubdomainDepthModeCount',
+            'primarySubdomainDepthEntropy',
+            'primarySubdomainDepthVariation',
+            'primarySubdomainDepthSkew',
+            'primarySubdomainDepthKurtosis',
+            'dataLengthAvg',
+            'dataLengthMin',
+            'dataLengthMax',
+            'dataLengthMode',
+            'dataLengthCount',
+            'dataLengthEntropy',
+            'dataLengthVariation',
+            'dataLengthSkew',
+            'dataLengthKurtosis',
             'timeDeltaAvg',
             'timeDeltaMin',
             'timeDeltaMax',
@@ -501,13 +443,11 @@ def enrichedArrayToDataFrame(SUPAHARRAY, labelFlag):
             'timeDeltaVariation',
             'timeDeltaSkew',
             'timeDeltaKurtosis',
-            'framesFromTotal',
-            'bytesFromTotal',
-            'framesToTotal',
-            'bytesToTotal',
-            'framesTotalTotal',
-            'bytesTotalTotal'
+            'primaryDomainEntropy',
+            'primaryDomainBigram',
+            'dataLengthTotal'
         ]
+    print(len(cols))
 
     df.columns = cols
     if labelFlag == 1:
@@ -516,6 +456,7 @@ def enrichedArrayToDataFrame(SUPAHARRAY, labelFlag):
         df.to_csv(outputFile, mode='a', header=False, sep='\t')
 
     print(df)
+
 def fileLoad(csvName,timer, labelFlag, target):
     if timer == 'std':
 
@@ -596,8 +537,6 @@ bigrams_float = []
 
 likelihoodsMake()
 
-domain2ip = dictionaryMaker(csvOne, csvTwo)
-
 if args['append']:
         print(args['append'])
         labelFlag = 0
@@ -611,5 +550,6 @@ if args['file'] == "dir":
         fileLoad(csvFile, timer, labelFlag, target)
 
 elif args['file'] == "csv":
+    print("file")
     fileLoad(csvName, timer, labelFlag, target)
 
