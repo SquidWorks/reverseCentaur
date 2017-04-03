@@ -86,7 +86,7 @@ def cleanPcap(pcapFile):
     preFixedFiles = sorted(glob.glob(fileCut+ "*.pcap*"))
 
     #print(preFixedFiles)
-    return(preFixedFiles)
+    return preFixedFiles
 
 def cleanAndReadPcap(fileName):
 

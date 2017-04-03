@@ -1,9 +1,8 @@
-import csv
-from subprocess import Popen, PIPE, STDOUT
-import time
-import glob
 import argparse
+import glob
 import os
+import time
+from subprocess import Popen, PIPE, STDOUT
 
 
 def readPcapToCSV(fileName, csvName):
@@ -35,7 +34,7 @@ def cleanPcap(pcapFile):
     preFixedFiles = sorted(glob.glob(fileCut+ "*.pcap*"))
 
     #print(preFixedFiles)
-    return(preFixedFiles)
+    return preFixedFiles
 
 def cleanAndReadPcap(fileName):
 
@@ -61,7 +60,7 @@ fileName = args['read']
 csvName = args['write']
 
 if args['type'] == "live":
-    readPcapToCSV(fileName, csvName, 0)
+    readPcapToCSV(fileName, csvName)
 
 elif args['type'] == "dir":
     allFiles = glob.glob(fileName+ "/*.pcap*")

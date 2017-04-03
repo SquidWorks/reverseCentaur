@@ -1,12 +1,13 @@
-import csv
-from collections import defaultdict
-import pandas as pd
 import argparse
-from collections import Counter
-import math
-import time
+import csv
 import glob
+import math
+import pandas as pd
+import time
+from collections import Counter
+from collections import defaultdict
 from scipy import stats
+
 
 def dictionaryMaker(csvOne, csvTwo):
     f = open(csvOne)
@@ -21,14 +22,14 @@ def dictionaryMaker(csvOne, csvTwo):
         else:
 
             a = (row[0].split("\t"))
-            #print(a)
+            # print(a)
             # This fails sometimes when the packet capture gets corrupted, we wind up having one and a half
             # Then the call for a[2] is
             b = a[2].split(".")
-            if b[-1].isdigit() or b==[]:
-                #then its an ip, skip it
-                #perhaps should add ip detection
-                #print(b[-1])
+            if b[-1].isdigit() or b == []:
+                # then its an ip, skip it
+                # perhaps should add ip detection
+                # print(b[-1])
                 pass
             else:
                 domain2ip[a[1]] = [a[2]]
@@ -44,27 +45,25 @@ def dictionaryMaker(csvOne, csvTwo):
         else:
 
             a = (row[0].split("\t"))
-            #print(a)
+            # print(a)
             b = a[2].split(".")
-            if b[-1].isdigit() or b==[]:
-                #then its an ip, skip it
-                #perhaps should add ip detection
-                #print(b[-1])
+            if b[-1].isdigit() or b == []:
+                # then its an ip, skip it
+                # perhaps should add ip detection
+                # print(b[-1])
                 pass
             else:
                 domain2ip[a[1]] = [a[2]]
 
     return domain2ip
 
-def likelihoodsMake():
 
-    word_file = "words.txt"
-    log_filename = "filterlog.txt"
+def likelihoodsMake():
     likelihood_file = "likelihoods.txt"
     bigram_file = "bigrams.txt"
 
-    if bigrams_float == []:
-        bigrams = open(bigram_file,"r")
+    if not bigrams_float:
+        bigrams = open(bigram_file, "r")
         for line in bigrams:
             bigram_row = []
             line_list = line.split()
@@ -81,30 +80,30 @@ def likelihoodsMake():
 
     print("Likelihoods Loaded")
 
+
 def bigramQuery(field):
     if len(field) > 1:
-        for k in range(len(field)-1):
-
+        for k in range(len(field) - 1):
             this_ltr = field[k]
 
-            next_ltr = field[k+1]
+            next_ltr = field[k + 1]
             this_idx = ord(this_ltr) - ord('a')
 
             next_idx = ord(next_ltr) - ord('a')
 
-
-            field_likelihood = bigrams_float[this_idx][next_idx]*2*len(field)
+            field_likelihood = bigrams_float[this_idx][next_idx] * 2 * len(field)
         return field_likelihood
     else:
         return 0
 
+
 def entropy(s):
-    p, lns =Counter(s), float(len(s))
-    return (-sum(count/lns * math.log(count/lns,2) for count in p.values()))
+    p, lns = Counter(s), float(len(s))
+    return -sum(count / lns * math.log(count / lns, 2) for count in p.values())
+
 
 def domainEnrich(domainNameFull):
     subdomainName = domainNameFull.split(".")[:-2]
-
 
     subdomainNameJoined = (''.join(subdomainName)).lower()
 
@@ -119,14 +118,16 @@ def domainEnrich(domainNameFull):
 
     subdomainNameJoined = subdomainNameJoined
 
-    field = subdomainNameJoined.translate(None, '0123456789-') # PROBLEM CHILD
+    field = subdomainNameJoined.translate(None, '0123456789-')  # PROBLEM CHILD
     subdomainBigram = bigramQuery(field)
 
     domainEntropy = entropy(domainName)
 
-    field = domainName.translate(None, '0123456789-') # PROBLEM CHILD
-    domainBigram =  bigramQuery(field)
-    return [subdomainDepth, subdomainLength, subdomainEntropy, subdomainBigram, domainEntropy, domainBigram, subdomainName, domainNameJoined]
+    field = domainName.translate(None, '0123456789-')  # PROBLEM CHILD
+    domainBigram = bigramQuery(field)
+    return [subdomainDepth, subdomainLength, subdomainEntropy, subdomainBigram, domainEntropy, domainBigram,
+            subdomainName, domainNameJoined]
+
 
 def enrichToDictionary(csvName):
     with open(csvName, 'rb') as f:
@@ -137,9 +138,8 @@ def enrichToDictionary(csvName):
 
     for i in bigArray:
 
-        ipAddress = i[2]
-        #print(i)
-        #We need to create domain fields real quick
+        # print(i)
+        # We need to create domain fields real quick
         newI = i
 
         if domain2ip[i[2]] != {}:
@@ -148,7 +148,6 @@ def enrichToDictionary(csvName):
                 print("WE IN HERE")
 
                 subdomainName = ''
-                domainNameAndTld = 'digit'
                 subdomainDepth = 0
                 subdomainLength = 0
                 subdomainEntropy = 0
@@ -160,7 +159,7 @@ def enrichToDictionary(csvName):
                 domainNameFull = domain2ip[i[2]][0]
 
                 enriched = domainEnrich(domainNameFull)
-                #return [subdomainDepth, subdomainLength, subdomainEntropy, subdomainBigram, domainEntropy, domainBigram, subdomainName, domainNameJoined]
+                # return [subdomainDepth, subdomainLength, subdomainEntropy, subdomainBigram, domainEntropy, domainBigram, subdomainName, domainNameJoined]
                 subdomainDepth = enriched[0]
                 subdomainLength = enriched[1]
                 subdomainEntropy = enriched[2]
@@ -182,14 +181,13 @@ def enrichToDictionary(csvName):
             domainEntropy = 0
             domainBigram = 0
 
-
-
-
-        try: bytesPerFrameFrom = float(i[5])/float(i[4])
+        try:
+            bytesPerFrameFrom = float(i[5]) / float(i[4])
         except:
             bytesPerFrameFrom = 0
 
-        try: bytesPerFrameTo = float(i[7])/float(i[6])
+        try:
+            bytesPerFrameTo = float(i[7]) / float(i[6])
         except:
             bytesPerFrameTo = 0
 
@@ -207,11 +205,9 @@ def enrichToDictionary(csvName):
         dictKey = i[0] + "x" + domainNameJoined
         if dictKey in magicDictionary:
 
-
-
-            #print(magicDictionary[dictKey])
-            #print("AAA")
-            #print(i)
+            # print(magicDictionary[dictKey])
+            # print("AAA")
+            # print(i)
             magicDictionary[dictKey].append(newI)
 
 
@@ -219,18 +215,18 @@ def enrichToDictionary(csvName):
 
         else:
 
-
-            magicDictionary[dictKey]= [newI]
+            magicDictionary[dictKey] = [newI]
 
     return magicDictionary
+
 
 def dictionaryEnricher(magicDictionary):
     SUPAHARRAY = []
 
     for i in magicDictionary:
 
-        #print(i)
-        #print(magicDictionary[i])
+        # print(i)
+        # print(magicDictionary[i])
         tempArray = []
         statisticsArray = []
 
@@ -273,15 +269,11 @@ def dictionaryEnricher(magicDictionary):
             count += 1
             domainName = j[4]
 
-
-
             if j[5] not in subDomainArray:
                 fqdns += 1
 
             domainBigram = j[6]
             domainEntropy = j[7]
-
-
 
             subdomainBigramAvgList.append(j[8])
             subdomainEntropyAvgList.append(j[9])
@@ -301,16 +293,14 @@ def dictionaryEnricher(magicDictionary):
             bytesTotalTotal += float(j[19])
             timeList.append(float(j[20]))
 
-
         ipAddress = j[2]
         if target:
             if target != ipAddress:
                 break
 
-        deltaTimeList = [j-i for i, j in zip(timeList[:-1], timeList[1:])]
+        deltaTimeList = [j - i for i, j in zip(timeList[:-1], timeList[1:])]
 
-
-        listOfArrays= [ subdomainBigramAvgList,
+        listOfArrays = [subdomainBigramAvgList,
                         subdomainEntropyAvgList,
                         subdomainLengthAvgList,
                         subdomainDepthAvgList,
@@ -322,9 +312,6 @@ def dictionaryEnricher(magicDictionary):
                         bytesPerFrameToList,
                         deltaTimeList]
 
-
-
-
         # [0] = subdomainBigram,
         # [1] = subdomainEntropy,
         # [2] = subdomainLength,
@@ -335,179 +322,178 @@ def dictionaryEnricher(magicDictionary):
         # [7] = framesTo,
         # [8] = bytesTo,
         # [9] = bytesPerFrame
-        for i in listOfArrays:
-            listOfListOfFeatures = [[]]*9
-            if not i:
-                i = [0] # I should investigate why empty arrays are being passed, but nah.
+        for k in listOfArrays:
+            listOfListOfFeatures = [[]] * 9
+            if not k:
+                k = [0]  # I should investigate why empty arrays are being passed, but nah.
 
-            listOfListOfFeatures[0] = float(sum(i)/(len(i))) #Average
-            listOfListOfFeatures[1] = min(i) #min
-            listOfListOfFeatures[2] = max(i) #max
-            listOfListOfFeatures[3] = stats.mode(i)[0][0] #mode
-            listOfListOfFeatures[4] = stats.mode(i)[1][0] #mode count
-            if listOfListOfFeatures[4] == 1: #if modecount = 1
-                listOfListOfFeatures[4] = 0 # set = 0
-            listOfListOfFeatures[5] = stats.entropy(i)  #entropy
-            if math.isnan(listOfListOfFeatures[5]): #if is not a number
-                listOfListOfFeatures[4] = 0 # set = 0
-                listOfListOfFeatures[5] = 0 # set = 0
-            listOfListOfFeatures[6] = stats.variation(i) #variation
-            if math.isnan(listOfListOfFeatures[6]): #if is not a number
-                listOfListOfFeatures[6] = 0 # set = 0
-            listOfListOfFeatures[7] = stats.skew(i) #skew
-            listOfListOfFeatures[8] = stats.kurtosis(i) #kurtosis
+            listOfListOfFeatures[0] = float(sum(i) / (len(i)))  # Average
+            listOfListOfFeatures[1] = min(i)  # min
+            listOfListOfFeatures[2] = max(i)  # max
+            listOfListOfFeatures[3] = stats.mode(i)[0][0]  # mode
+            listOfListOfFeatures[4] = stats.mode(i)[1][0]  # mode count
+            if listOfListOfFeatures[4] == 1:  # if modecount = 1
+                listOfListOfFeatures[4] = 0  # set = 0
+            listOfListOfFeatures[5] = stats.entropy(i)  # entropy
+            if math.isnan(listOfListOfFeatures[5]):  # if is not a number
+                listOfListOfFeatures[4] = 0  # set = 0
+                listOfListOfFeatures[5] = 0  # set = 0
+            listOfListOfFeatures[6] = stats.variation(i)  # variation
+            if math.isnan(listOfListOfFeatures[6]):  # if is not a number
+                listOfListOfFeatures[6] = 0  # set = 0
+            listOfListOfFeatures[7] = stats.skew(i)  # skew
+            listOfListOfFeatures[8] = stats.kurtosis(i)  # kurtosis
 
             statisticsArray.append(listOfListOfFeatures)
-
-
 
         flatList = [item for sublist in statisticsArray for item in sublist]
 
         tempArray.extend((
-        domainName,
-        ipAddress,
-        label,
-        dataset,
-        owner,
-        count,
-        fqdns,
-        domainEntropy,
-        domainBigram,
+            domainName,
+            ipAddress,
+            label,
+            dataset,
+            owner,
+            count,
+            fqdns,
+            domainEntropy,
+            domainBigram,
         ))
 
         tempArray.extend(flatList)
 
         tempArray.extend((
-        framesFromTotal,
-        bytesFromTotal,
-        framesToTotal,
-        bytesToTotal,
-        framesTotalTotal,
-        bytesTotalTotal
+            framesFromTotal,
+            bytesFromTotal,
+            framesToTotal,
+            bytesToTotal,
+            framesTotalTotal,
+            bytesTotalTotal
         ))
 
         SUPAHARRAY.append(tempArray)
 
     return SUPAHARRAY
 
+
 def enrichedArrayToDataFrame(SUPAHARRAY, labelFlag):
     df = pd.DataFrame(SUPAHARRAY)
     cols = [
-            'domainName',
-            'ipAddress',
-            'label',
-            'dataset',
-            'owner',
-            'count',
-            'fqdns',
-            'domainEntropy',
-            'domainBigram',
-            'subdomainBigramAvg',
-            'subdomainBigramMin',
-            'subdomainBigramMax',
-            'subdomainBigramMode',
-            'subdomainBigramModeCount',
-            'subdomainBigramEntropy',
-            'subdomainBigramVariation',
-            'subdomainBigramSkew',
-            'subdomainBigramKurtosis',
-            'subdomainEntropyAvg',
-            'subdomainEntropyMin',
-            'subdomainEntropyMax',
-            'subdomainEntropyMode',
-            'subdomainEntropyModeCount',
-            'subdomainEntropyEntropy',
-            'subdomainEntropyVariation',
-            'subdomainEntropySkew',
-            'subdomainEntropyKurtosis',
-            'subdomainLengthAvg',
-            'subdomainLengthMin',
-            'subdomainLengthMax',
-            'subdomainLengthMode',
-            'subdomainLengthModeCount',
-            'subdomainLengthEntropy',
-            'subdomainLengthVariation',
-            'subdomainLengthSkew',
-            'subdomainLengthKurtosis',
-            'subdomainDepthAvg',
-            'subdomainDepthMin',
-            'subdomainDepthMax',
-            'subdomainDepthMode',
-            'subdomainDepthModeCount',
-            'subdomainDepthEntropy',
-            'subdomainDepthVariation',
-            'subdomainDepthSkew',
-            'subdomainDepthKurtosis',
-            'framesFromAvg',
-            'framesFromMin',
-            'framesFromMax',
-            'framesFromMode',
-            'framesFromModeCount',
-            'framesFromEntropy',
-            'framesFromVariation',
-            'framesFromSkew',
-            'framesFromKurtosis',
-            'bytesFromAvg',
-            'bytesFromAMin',
-            'bytesFromAMax',
-            'bytesFromAMode',
-            'bytesFromAModeCount',
-            'bytesFromAEntropy',
-            'bytesFromAVariation',
-            'bytesFromASkew',
-            'bytesFromAKurtosis',
-            'bytesPerFrameFromAvg',
-            'bytesPerFrameFromMin',
-            'bytesPerFrameFromMax',
-            'bytesPerFrameFromMode',
-            'bytesPerFrameFromModeCount',
-            'bytesPerFrameFromEntropy',
-            'bytesPerFrameFromVariation',
-            'bytesPerFrameFromSkew',
-            'bytesPerFrameFromKurtosis',
-            'framesToAvg',
-            'framesToMin',
-            'framesToMax',
-            'framesToMode',
-            'framesToModeCount',
-            'framesToEntropy',
-            'framesToVariation',
-            'framesToSkew',
-            'framesToKurtosis',
-            'bytesToAvg',
-            'bytesToMin',
-            'bytesToMax',
-            'bytesToMode',
-            'bytesToModeCount',
-            'bytesToEntropy',
-            'bytesToVariation',
-            'bytesToSkew',
-            'bytesToKurtosis',
-            'bytesPerFrameToAvg',
-            'bytesPerFrameToMin',
-            'bytesPerFrameToMax',
-            'bytesPerFrameToMode',
-            'bytesPerFrameToModeCount',
-            'bytesPerFrameToEntropy',
-            'bytesPerFrameToVariation',
-            'bytesPerFrameToSkew',
-            'bytesPerFrameToKurtosis',
-            'timeDeltaAvg',
-            'timeDeltaMin',
-            'timeDeltaMax',
-            'timeDeltaMode',
-            'timeDeltaModeCount',
-            'timeDeltaEntropy',
-            'timeDeltaVariation',
-            'timeDeltaSkew',
-            'timeDeltaKurtosis',
-            'framesFromTotal',
-            'bytesFromTotal',
-            'framesToTotal',
-            'bytesToTotal',
-            'framesTotalTotal',
-            'bytesTotalTotal'
-        ]
+        'domainName',
+        'ipAddress',
+        'label',
+        'dataset',
+        'owner',
+        'count',
+        'fqdns',
+        'domainEntropy',
+        'domainBigram',
+        'subdomainBigramAvg',
+        'subdomainBigramMin',
+        'subdomainBigramMax',
+        'subdomainBigramMode',
+        'subdomainBigramModeCount',
+        'subdomainBigramEntropy',
+        'subdomainBigramVariation',
+        'subdomainBigramSkew',
+        'subdomainBigramKurtosis',
+        'subdomainEntropyAvg',
+        'subdomainEntropyMin',
+        'subdomainEntropyMax',
+        'subdomainEntropyMode',
+        'subdomainEntropyModeCount',
+        'subdomainEntropyEntropy',
+        'subdomainEntropyVariation',
+        'subdomainEntropySkew',
+        'subdomainEntropyKurtosis',
+        'subdomainLengthAvg',
+        'subdomainLengthMin',
+        'subdomainLengthMax',
+        'subdomainLengthMode',
+        'subdomainLengthModeCount',
+        'subdomainLengthEntropy',
+        'subdomainLengthVariation',
+        'subdomainLengthSkew',
+        'subdomainLengthKurtosis',
+        'subdomainDepthAvg',
+        'subdomainDepthMin',
+        'subdomainDepthMax',
+        'subdomainDepthMode',
+        'subdomainDepthModeCount',
+        'subdomainDepthEntropy',
+        'subdomainDepthVariation',
+        'subdomainDepthSkew',
+        'subdomainDepthKurtosis',
+        'framesFromAvg',
+        'framesFromMin',
+        'framesFromMax',
+        'framesFromMode',
+        'framesFromModeCount',
+        'framesFromEntropy',
+        'framesFromVariation',
+        'framesFromSkew',
+        'framesFromKurtosis',
+        'bytesFromAvg',
+        'bytesFromAMin',
+        'bytesFromAMax',
+        'bytesFromAMode',
+        'bytesFromAModeCount',
+        'bytesFromAEntropy',
+        'bytesFromAVariation',
+        'bytesFromASkew',
+        'bytesFromAKurtosis',
+        'bytesPerFrameFromAvg',
+        'bytesPerFrameFromMin',
+        'bytesPerFrameFromMax',
+        'bytesPerFrameFromMode',
+        'bytesPerFrameFromModeCount',
+        'bytesPerFrameFromEntropy',
+        'bytesPerFrameFromVariation',
+        'bytesPerFrameFromSkew',
+        'bytesPerFrameFromKurtosis',
+        'framesToAvg',
+        'framesToMin',
+        'framesToMax',
+        'framesToMode',
+        'framesToModeCount',
+        'framesToEntropy',
+        'framesToVariation',
+        'framesToSkew',
+        'framesToKurtosis',
+        'bytesToAvg',
+        'bytesToMin',
+        'bytesToMax',
+        'bytesToMode',
+        'bytesToModeCount',
+        'bytesToEntropy',
+        'bytesToVariation',
+        'bytesToSkew',
+        'bytesToKurtosis',
+        'bytesPerFrameToAvg',
+        'bytesPerFrameToMin',
+        'bytesPerFrameToMax',
+        'bytesPerFrameToMode',
+        'bytesPerFrameToModeCount',
+        'bytesPerFrameToEntropy',
+        'bytesPerFrameToVariation',
+        'bytesPerFrameToSkew',
+        'bytesPerFrameToKurtosis',
+        'timeDeltaAvg',
+        'timeDeltaMin',
+        'timeDeltaMax',
+        'timeDeltaMode',
+        'timeDeltaModeCount',
+        'timeDeltaEntropy',
+        'timeDeltaVariation',
+        'timeDeltaSkew',
+        'timeDeltaKurtosis',
+        'framesFromTotal',
+        'bytesFromTotal',
+        'framesToTotal',
+        'bytesToTotal',
+        'framesTotalTotal',
+        'bytesTotalTotal'
+    ]
 
     df.columns = cols
     if labelFlag == 1:
@@ -516,7 +502,9 @@ def enrichedArrayToDataFrame(SUPAHARRAY, labelFlag):
         df.to_csv(outputFile, mode='a', header=False, sep='\t')
 
     print(df)
-def fileLoad(csvName,timer, labelFlag, target):
+
+
+def fileLoad(csvName, timer, labelFlag):
     if timer == 'std':
 
         magicDictionary = enrichToDictionary(csvName)
@@ -536,24 +524,24 @@ def fileLoad(csvName,timer, labelFlag, target):
         timeArray = []
 
         for i in bigArray:
-            #print(i)
+            # print(i)
             if startTime + float(timer) > float(i[10]):
                 timeArray.append(i)
 
             else:
                 with open("tmp.csv", "w") as f:
-                        writer = csv.writer(f)
-                        writer.writerows(timeArray)
+                    writer = csv.writer(f)
+                    writer.writerows(timeArray)
                 magicDictionary = enrichToDictionary("tmp.csv")
 
                 SUPAHARRAY = dictionaryEnricher(magicDictionary)
 
                 enrichedArrayToDataFrame(SUPAHARRAY, labelFlag)
-                #print(timeArray)
+                # print(timeArray)
                 timeArray = []
 
                 labelFlag = 0
-                startTime = startTime + 10
+                startTime += 10
 
     end = time.time()
     print(end - start)
@@ -563,29 +551,25 @@ start = time.time()
 
 parser = argparse.ArgumentParser(description="provide the parameters to make the file run")
 parser.add_argument("-r", "--read", help='Filename of the csv to read', required=True)
-parser.add_argument('-w','--write', help='Filename of the csv to write', required=True)
-parser.add_argument('-t','--time', help='Time length to split by if desired', required=False, default='std')
-parser.add_argument('-f','--file', help='Type of file read: "csv", "dir"', required=False, default='csv')
-parser.add_argument('-l','--label', help='Label for dataset', required=True)
-parser.add_argument('-d','--dataset', help='Dataset name', required=True)
-parser.add_argument('-o','--owner', help='Owner name', required=True)
-parser.add_argument('-a','--append', help='If set, appends to existing csv', required=False, action='store_true')
-parser.add_argument('-z','--target', help='Record data for targeted IP address only', required=False)
-
+parser.add_argument('-w', '--write', help='Filename of the csv to write', required=True)
+parser.add_argument('-t', '--time', help='Time length to split by if desired', required=False, default='std')
+parser.add_argument('-f', '--file', help='Type of file read: "csv", "dir"', required=False, default='csv')
+parser.add_argument('-l', '--label', help='Label for dataset', required=True)
+parser.add_argument('-d', '--dataset', help='Dataset name', required=True)
+parser.add_argument('-o', '--owner', help='Owner name', required=True)
+parser.add_argument('-a', '--append', help='If set, appends to existing csv', required=False, action='store_true')
+parser.add_argument('-z', '--target', help='Record data for targeted IP address only', required=False)
 
 args = vars(parser.parse_args())
-
 
 csvName = args['read']
 csvOne = 'output.csv'
 csvTwo = 'output2.csv'
 
-
 label = args['label']
 dataset = args['dataset']
 owner = args['owner']
 target = args['target']
-
 
 outputFile = args['write']
 
@@ -599,17 +583,16 @@ likelihoodsMake()
 domain2ip = dictionaryMaker(csvOne, csvTwo)
 
 if args['append']:
-        print(args['append'])
-        labelFlag = 0
+    print(args['append'])
+    labelFlag = 0
 else:
-        labelFlag = 1
+    labelFlag = 1
 
 if args['file'] == "dir":
     print("dir")
-    csvFiles = glob.glob(csvName+ "/*.*")
+    csvFiles = glob.glob(csvName + "/*.*")
     for csvFile in csvFiles:
-        fileLoad(csvFile, timer, labelFlag, target)
+        fileLoad(csvFile, timer, labelFlag)
 
 elif args['file'] == "csv":
-    fileLoad(csvName, timer, labelFlag, target)
-
+    fileLoad(csvName, timer, labelFlag)
