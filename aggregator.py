@@ -7,7 +7,6 @@ import csv
 import glob
 import pandas as pd
 
-
 parser = argparse.ArgumentParser(description="provide the parameters to make the file run")
 parser.add_argument("-r", "--read", help='Filename of the dir to read', required=True)
 parser.add_argument('-wt', '--writeTcp', help='Filename of the csv to write', required=True)
@@ -33,15 +32,12 @@ target = args['target']
 outputCsvTcp = args['writeTcp']
 outputCsvDns = args['writeDns']
 
-
 timer = args['time']
 string = ""
 if args['time']:
     string += " -t " + args['time'] +" "
 if args['target']:
     string += " -z " + args['target'] + " "
-
-
 
 count = 1
 
