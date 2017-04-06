@@ -22,7 +22,7 @@ def readPcapToCSV(fileName, csvName):
 
 
     bigArray = []
-    commandString = "tshark -nr " + fileName + " -Nn -q -z conv,tcp,"
+    commandString = "tshark -r " + fileName + " -q -z conv,tcp,"
     p = Popen(commandString, shell=True, stdin=PIPE, stdout=PIPE, stderr=STDOUT, close_fds=True)
     output = p.stdout.readlines()
     for line in output:
@@ -34,7 +34,7 @@ def readPcapToCSV(fileName, csvName):
             bigArray.append(out3)
 
         except:
-            errorHandlingIsForScrubs = 0
+            errorHandlingIsForScrubs = "I Ain't No Scrub"
 
     sortedArray = sorted(bigArray,key=lambda x: x[10])
 
@@ -69,12 +69,12 @@ def cleanPcap(pcapFile):
 
 def cleanAndReadPcap(fileName, csvName):
 
-    cmd = 'tshark -r ' + fileName +' -T fields -e frame.time_epoch -e ip.dst -e ip.dst_host -Y "tcp.dstport == 443" >> output.csv'
+    cmd = 'tshark -nr ' + fileName +' -T fields -e frame.time_epoch -e ip.dst -e ip.dst_host -Nn -Y "tcp.dstport == 443" >> output.csv'
     p = Popen(cmd, shell=True, stdin=PIPE, stdout=PIPE, stderr=STDOUT, close_fds=True)
     #print("HTTPS Done")
 
 
-    cmd = 'tshark -r ' + fileName +' -T fields -e frame.time_epoch -e ip.dst -e ip.dst_host -Y "tcp" >> output2.csv'
+    cmd = 'tshark -nr ' + fileName +' -T fields -e frame.time_epoch -e ip.dst -e ip.dst_host -Nn -Y "tcp" >> output2.csv'
     l = Popen(cmd, shell=True, stdin=PIPE, stdout=PIPE, stderr=STDOUT, close_fds=True)
     #print("HTTP Done")
 
