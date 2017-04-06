@@ -197,12 +197,12 @@ def enrichToDictionary(csvName):
         try:
             bytesPerFrameFrom = float(i[5]) / float(i[4])
         except:
-            bytesPerFrameFrom = 0
+            bytesPerFrameFrom = 'na'
 
         try:
             bytesPerFrameTo = float(i[7]) / float(i[6])
         except:
-            bytesPerFrameTo = 0
+            bytesPerFrameTo = 'na'
 
         newI.insert(4, subdomainDepth)
         newI.insert(4, subdomainLength)
