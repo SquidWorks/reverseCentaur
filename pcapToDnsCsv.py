@@ -39,12 +39,12 @@ def cleanPcap(pcapFile):
 def cleanAndReadPcap(fileName):
 
 
-    fixedFiles = cleanPcap(fileName)
-    for files in fixedFiles:
-        print(files)
-        readPcapToCSV(files, csvName)
-        if files != args['read']:
-            os.remove(files)
+    #fixedFiles = cleanPcap(fileName)
+    #for files in fixedFiles:
+    #    print(files)
+    readPcapToCSV(fileName, csvName)
+    #    if files != args['read']:
+    #        os.remove(files)
 
 
 start = time.time()
@@ -60,7 +60,8 @@ fileName = args['read']
 csvName = args['write']
 
 if args['type'] == "live":
-    readPcapToCSV(fileName, csvName)
+    #readPcapToCSV(fileName, csvName)
+    print("Broken!")
 
 elif args['type'] == "dir":
     allFiles = glob.glob(fileName+ "/*.pcap*")

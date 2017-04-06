@@ -138,7 +138,10 @@ def enrichToDictionary(csvName):
         splitArray = i[0].split("\t")
 
         dnsRespNameFull = splitArray[1]
-        enriched = domainEnrich(dnsRespNameFull)
+        try:
+            enriched = domainEnrich(dnsRespNameFull)
+        except: #wireshark errors like truncated ddomain names
+            break
 
         if splitArray[4] != "":
             dnsRespPrimaryNameFull = splitArray[4]
@@ -282,22 +285,22 @@ def dictionaryEnricher(magicDictionary):
             if not k:
                 k = [0]  # I should investigate why empty arrays are being passed, but nah.
 
-            listOfListOfFeatures[0] = float(sum(i) / (len(i)))  # Average
-            listOfListOfFeatures[1] = min(i)  # min
-            listOfListOfFeatures[2] = max(i)  # max
-            listOfListOfFeatures[3] = stats.mode(i)[0][0]  # mode
-            listOfListOfFeatures[4] = stats.mode(i)[1][0]  # mode count
+            listOfListOfFeatures[0] = float(sum(k) / (len(k)))  # Average
+            listOfListOfFeatures[1] = min(k)  # min
+            listOfListOfFeatures[2] = max(k)  # max
+            listOfListOfFeatures[3] = stats.mode(k)[0][0]  # mode
+            listOfListOfFeatures[4] = stats.mode(k)[1][0]  # mode count
             if listOfListOfFeatures[4] == 1:  # if modecount = 1
                 listOfListOfFeatures[4] = 0  # set = 0
-            listOfListOfFeatures[5] = stats.entropy(i)  # entropy
+            listOfListOfFeatures[5] = stats.entropy(k)  # entropy
             if math.isnan(listOfListOfFeatures[5]):  # if is not a number
                 listOfListOfFeatures[4] = 0  # set = 0
                 listOfListOfFeatures[5] = 0  # set = 0
-            listOfListOfFeatures[6] = stats.variation(i)  # variation
+            listOfListOfFeatures[6] = stats.variation(k)  # variation
             if math.isnan(listOfListOfFeatures[6]):  # if is not a number
                 listOfListOfFeatures[6] = 0  # set = 0
-            listOfListOfFeatures[7] = stats.skew(i)  # skew
-            listOfListOfFeatures[8] = stats.kurtosis(i)  # kurtosis
+            listOfListOfFeatures[7] = stats.skew(k)  # skew
+            listOfListOfFeatures[8] = stats.kurtosis(k)  # kurtosis
 
             statisticsArray.append(listOfListOfFeatures)
 

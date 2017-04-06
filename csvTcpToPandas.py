@@ -21,11 +21,18 @@ def dictionaryMaker(csvOne, csvTwo):
 
         else:
 
-            a = (row[0].split("\t"))
+            try:
+                a = (row[0].split("\t"))
+            except:
+                break
             # print(a)
             # This fails sometimes when the packet capture gets corrupted, we wind up having one and a half
             # Then the call for a[2] is
-            b = a[2].split(".")
+
+            try:
+                b = a[2].split(".")
+            except:
+                break
             if b[-1].isdigit() or b == []:
                 # then its an ip, skip it
                 # perhaps should add ip detection
@@ -43,10 +50,16 @@ def dictionaryMaker(csvOne, csvTwo):
 
 
         else:
+            try:
+                a = row[0].split("\t")
 
-            a = (row[0].split("\t"))
+            except:
+                break
             # print(a)
-            b = a[2].split(".")
+            try:
+                b = a[2].split(".")
+            except:
+                break
             if b[-1].isdigit() or b == []:
                 # then its an ip, skip it
                 # perhaps should add ip detection
@@ -265,7 +278,7 @@ def dictionaryEnricher(magicDictionary):
         bytesTotalTotal = 0
 
         for j in magicDictionary[i]:
-            print(j)
+            #print(j)
             count += 1
             domainName = j[4]
 
@@ -275,28 +288,41 @@ def dictionaryEnricher(magicDictionary):
             domainBigram = j[6]
             domainEntropy = j[7]
 
-            subdomainBigramAvgList.append(j[8])
-            subdomainEntropyAvgList.append(j[9])
-            subdomainLengthAvgList.append(j[10])
-            subdomainDepthAvgList.append(j[11])
-            framesFromList.append(float(j[12]))
-            framesFromTotal += float(j[12])
-            bytesFromList.append(float(j[13]))
-            bytesFromTotal += float(j[13])
-            bytesPerFrameFromList.append(float(j[14]))
-            framesToList.append(float(j[15]))
-            framesToTotal += float(j[15])
-            bytesToList.append(float(j[16]))
-            bytesToTotal += float(j[16])
-            bytesPerFrameToList.append(float(j[17]))
-            framesTotalTotal += float(j[18])
-            bytesTotalTotal += float(j[19])
-            timeList.append(float(j[20]))
+            try:
+                subdomainBigramAvgList.append(j[8])
+                subdomainEntropyAvgList.append(j[9])
+                subdomainLengthAvgList.append(j[10])
+                subdomainDepthAvgList.append(j[11])
+                framesFromList.append(float(j[12]))
+                framesFromTotal += float(j[12])
+                bytesFromList.append(float(j[13]))
+                bytesFromTotal += float(j[13])
+                bytesPerFrameFromList.append(float(j[14]))
+                framesToList.append(float(j[15]))
+                framesToTotal += float(j[15])
+                bytesToList.append(float(j[16]))
+                bytesToTotal += float(j[16])
+                bytesPerFrameToList.append(float(j[17]))
+                framesTotalTotal += float(j[18])
+                bytesTotalTotal += float(j[19])
+                timeList.append(float(j[20]))
+            except:
+                break
 
         ipAddress = j[2]
         if target:
             if target != ipAddress:
                 break
+
+        domainLabel = label
+
+        if ipLabel:
+            if domainName == "none":
+                domainLabel = "ipOnly"
+
+        if labelList:
+            if labelList == domainName.split(".")[-1]:
+                domainLabel = "Good"
 
         deltaTimeList = [j - i for i, j in zip(timeList[:-1], timeList[1:])]
 
@@ -326,23 +352,22 @@ def dictionaryEnricher(magicDictionary):
             listOfListOfFeatures = [[]] * 9
             if not k:
                 k = [0]  # I should investigate why empty arrays are being passed, but nah.
-
-            listOfListOfFeatures[0] = float(sum(i) / (len(i)))  # Average
-            listOfListOfFeatures[1] = min(i)  # min
-            listOfListOfFeatures[2] = max(i)  # max
-            listOfListOfFeatures[3] = stats.mode(i)[0][0]  # mode
-            listOfListOfFeatures[4] = stats.mode(i)[1][0]  # mode count
+            listOfListOfFeatures[0] = float(sum(k) / (len(k)))  # Average
+            listOfListOfFeatures[1] = min(k)  # min
+            listOfListOfFeatures[2] = max(k)  # max
+            listOfListOfFeatures[3] = stats.mode(k)[0][0]  # mode
+            listOfListOfFeatures[4] = stats.mode(k)[1][0]  # mode count
             if listOfListOfFeatures[4] == 1:  # if modecount = 1
                 listOfListOfFeatures[4] = 0  # set = 0
-            listOfListOfFeatures[5] = stats.entropy(i)  # entropy
+            listOfListOfFeatures[5] = stats.entropy(k)  # entropy
             if math.isnan(listOfListOfFeatures[5]):  # if is not a number
                 listOfListOfFeatures[4] = 0  # set = 0
                 listOfListOfFeatures[5] = 0  # set = 0
-            listOfListOfFeatures[6] = stats.variation(i)  # variation
+            listOfListOfFeatures[6] = stats.variation(k)  # variation
             if math.isnan(listOfListOfFeatures[6]):  # if is not a number
                 listOfListOfFeatures[6] = 0  # set = 0
-            listOfListOfFeatures[7] = stats.skew(i)  # skew
-            listOfListOfFeatures[8] = stats.kurtosis(i)  # kurtosis
+            listOfListOfFeatures[7] = stats.skew(k)  # skew
+            listOfListOfFeatures[8] = stats.kurtosis(k)  # kurtosis
 
             statisticsArray.append(listOfListOfFeatures)
 
@@ -351,7 +376,7 @@ def dictionaryEnricher(magicDictionary):
         tempArray.extend((
             domainName,
             ipAddress,
-            label,
+            domainLabel,
             dataset,
             owner,
             count,
@@ -559,6 +584,8 @@ parser.add_argument('-d', '--dataset', help='Dataset name', required=True)
 parser.add_argument('-o', '--owner', help='Owner name', required=True)
 parser.add_argument('-a', '--append', help='If set, appends to existing csv', required=False, action='store_true')
 parser.add_argument('-z', '--target', help='Record data for targeted IP address only', required=False)
+parser.add_argument('-y', '--labelList', help='Record data for targeted IP address only', required=False)
+parser.add_argument('-x', '--ipLabel', help='Record data for targeted IP address only', required=False, action='store_true')
 
 args = vars(parser.parse_args())
 
@@ -570,6 +597,9 @@ label = args['label']
 dataset = args['dataset']
 owner = args['owner']
 target = args['target']
+
+labelList = args['labelList']
+ipLabel = args['ipLabel']
 
 outputFile = args['write']
 
