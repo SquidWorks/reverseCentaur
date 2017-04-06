@@ -252,10 +252,40 @@ def dictionaryEnricher(magicDictionary):
 
             timeList.append(float(j[7]))
 
-        ipAddress = j[0]
+        ipAddress = j[2]
         if target:
             if target != ipAddress:
                 break
+
+        domainLabel = label
+
+        if ipLabel:
+            if domainName == "none":
+                domainLabel = "ipOnly"
+
+        if labelList:
+            if labelList == domainName.split(".")[-1]:
+                domainLabel = "Good"
+
+        if protocol:
+            protocolLabel = protocol
+        else:
+            protocolLabel = 0
+
+        if malware:
+            malwareLabel = malware
+        else:
+            malwareLabel = 0
+
+        if sleep:
+            sleepLabel = sleep
+        else:
+            sleepLabel = 0
+
+        if jitter:
+            jitterLabel = jitter
+        else:
+            jitterLabel = 0
 
         deltaTimeList = [j - i for i, j in zip(timeList[:-1], timeList[1:])]
 
@@ -309,7 +339,11 @@ def dictionaryEnricher(magicDictionary):
         tempArray.extend((
             domainName,
             ipAddress,
-            label,
+            domainLabel,
+            protocolLabel,
+            malwareLabel,
+            sleepLabel,
+            jitterLabel,
             dataset,
             owner,
             count,
@@ -338,6 +372,10 @@ def enrichedArrayToDataFrame(SUPAHARRAY, labelFlag):
         'domainName',
         'ipAddress',
         'label',
+        'protocolLabel',
+        'malwareLabel',
+        'sleepLabel',
+        'jitterLabel'
         'dataset',
         'owner',
         'count',
@@ -501,10 +539,19 @@ parser.add_argument('-w', '--write', help='Filename of the csv to write', requir
 parser.add_argument('-t', '--time', help='Time length to split by if desired', required=False, default='std')
 parser.add_argument('-f', '--file', help='Type of file read: "csv", "dir"', required=False, default='csv')
 parser.add_argument('-l', '--label', help='Label for dataset', required=True)
+parser.add_argument('-m', '--malware', help='Record data for targeted IP address only', required=False)
+parser.add_argument('-p', '--protocol', help='Record data for targeted IP address only', required=False)
+parser.add_argument('-s', '--sleep', help='Record data for targeted IP address only', required=False)
+parser.add_argument('-j', '--jitter', help='Record data for targeted IP address only', required=False)
+
 parser.add_argument('-d', '--dataset', help='Dataset name', required=True)
 parser.add_argument('-o', '--owner', help='Owner name', required=True)
 parser.add_argument('-a', '--append', help='If set, appends to existing csv', required=False, action='store_true')
 parser.add_argument('-z', '--target', help='Record data for targeted IP address only', required=False)
+
+
+parser.add_argument('-y', '--labelList', help='label ._____ as Good', required=False)
+parser.add_argument('-x', '--ipLabel', help='ipOnly label', required=False, action='store_true')
 
 args = vars(parser.parse_args())
 
@@ -513,10 +560,18 @@ csvOne = 'output.csv'
 csvTwo = 'output2.csv'
 
 label = args['label']
+protocol = args['protocol']
+malware = args['malware']
+sleep = args['sleep']
+jitter = args['jitter']
+
+
 dataset = args['dataset']
 owner = args['owner']
 target = args['target']
 
+labelList = args['labelList']
+ipLabel = args['ipLabel']
 outputFile = args['write']
 
 timer = args['time']
