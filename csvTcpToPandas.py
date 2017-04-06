@@ -161,12 +161,12 @@ def enrichToDictionary(csvName):
                 print("WE IN HERE")
 
                 subdomainName = ''
-                subdomainDepth = 0
-                subdomainLength = 0
-                subdomainEntropy = 0
-                subdomainBigram = 0
-                domainEntropy = 0
-                domainBigram = 0
+                subdomainDepth = "na"
+                subdomainLength = "na"
+                subdomainEntropy = "na"
+                subdomainBigram = "na"
+                domainEntropy = "na"
+                domainBigram = "na"
 
             else:
                 domainNameFull = domain2ip[i[2]][0]
@@ -187,22 +187,22 @@ def enrichToDictionary(csvName):
             subdomainName = ''
 
             domainNameJoined = 'none'
-            subdomainDepth = 0
-            subdomainLength = 0
-            subdomainEntropy = 0
-            subdomainBigram = 0
-            domainEntropy = 0
-            domainBigram = 0
+            subdomainDepth = "na"
+            subdomainLength = "na"
+            subdomainEntropy = "na"
+            subdomainBigram = "na"
+            domainEntropy = "na"
+            domainBigram = "na"
 
         try:
             bytesPerFrameFrom = float(i[5]) / float(i[4])
         except:
-            bytesPerFrameFrom = 0
+            bytesPerFrameFrom = 'na'
 
         try:
             bytesPerFrameTo = float(i[7]) / float(i[6])
         except:
-            bytesPerFrameTo = 0
+            bytesPerFrameTo = 'na'
 
         newI.insert(4, subdomainDepth)
         newI.insert(4, subdomainLength)
@@ -324,6 +324,27 @@ def dictionaryEnricher(magicDictionary):
             if labelList == domainName.split(".")[-1]:
                 domainLabel = "Good"
 
+        if protocol:
+            protocolLabel = protocol
+        else:
+            protocolLabel = "na"
+
+        if malware:
+            malwareLabel = malware
+        else:
+            malwareLabel = "na"
+
+        if sleep:
+            sleepLabel = sleep
+        else:
+            sleepLabel = "na"
+
+        if jitter:
+            jitterLabel = jitter
+        else:
+            jitterLabel = "na"
+
+
         deltaTimeList = [j - i for i, j in zip(timeList[:-1], timeList[1:])]
 
         listOfArrays = [subdomainBigramAvgList,
@@ -350,24 +371,26 @@ def dictionaryEnricher(magicDictionary):
         # [9] = bytesPerFrame
         for k in listOfArrays:
             listOfListOfFeatures = [[]] * 9
-            if not k:
-                k = [0]  # I should investigate why empty arrays are being passed, but nah.
-            listOfListOfFeatures[0] = float(sum(k) / (len(k)))  # Average
-            listOfListOfFeatures[1] = min(k)  # min
-            listOfListOfFeatures[2] = max(k)  # max
-            listOfListOfFeatures[3] = stats.mode(k)[0][0]  # mode
-            listOfListOfFeatures[4] = stats.mode(k)[1][0]  # mode count
-            if listOfListOfFeatures[4] == 1:  # if modecount = 1
-                listOfListOfFeatures[4] = 0  # set = 0
-            listOfListOfFeatures[5] = stats.entropy(k)  # entropy
-            if math.isnan(listOfListOfFeatures[5]):  # if is not a number
-                listOfListOfFeatures[4] = 0  # set = 0
-                listOfListOfFeatures[5] = 0  # set = 0
-            listOfListOfFeatures[6] = stats.variation(k)  # variation
-            if math.isnan(listOfListOfFeatures[6]):  # if is not a number
-                listOfListOfFeatures[6] = 0  # set = 0
-            listOfListOfFeatures[7] = stats.skew(k)  # skew
-            listOfListOfFeatures[8] = stats.kurtosis(k)  # kurtosis
+            if k and k[0] != "na":
+
+                listOfListOfFeatures[0] = float(sum(k) / (len(k)))  # Average
+                listOfListOfFeatures[1] = min(k)  # min
+                listOfListOfFeatures[2] = max(k)  # max
+                listOfListOfFeatures[3] = stats.mode(k)[0][0]  # mode
+                listOfListOfFeatures[4] = stats.mode(k)[1][0]  # mode count
+                if listOfListOfFeatures[4] == 1:  # if modecount = 1
+                    listOfListOfFeatures[4] = 0  # set = 0
+                listOfListOfFeatures[5] = stats.entropy(k)  # entropy
+                if math.isnan(listOfListOfFeatures[5]):  # if is not a number
+                    listOfListOfFeatures[4] = "na"  # set = 0
+                    listOfListOfFeatures[5] = "na"  # set = 0
+                listOfListOfFeatures[6] = stats.variation(k)  # variation
+                if math.isnan(listOfListOfFeatures[6]):  # if is not a number
+                    listOfListOfFeatures[6] = "na"  # set = 0
+                listOfListOfFeatures[7] = stats.skew(k)  # skew
+                listOfListOfFeatures[8] = stats.kurtosis(k)  # kurtosis
+            else:
+                listOfListOfFeatures = ["na"] * 9
 
             statisticsArray.append(listOfListOfFeatures)
 
@@ -377,6 +400,10 @@ def dictionaryEnricher(magicDictionary):
             domainName,
             ipAddress,
             domainLabel,
+            protocolLabel,
+            malwareLabel,
+            sleepLabel,
+            jitterLabel,
             dataset,
             owner,
             count,
@@ -407,6 +434,10 @@ def enrichedArrayToDataFrame(SUPAHARRAY, labelFlag):
         'domainName',
         'ipAddress',
         'label',
+        'protocolLabel',
+        'malwareLabel',
+        'sleepLabel',
+        'jitterLabel',
         'dataset',
         'owner',
         'count',
@@ -580,12 +611,19 @@ parser.add_argument('-w', '--write', help='Filename of the csv to write', requir
 parser.add_argument('-t', '--time', help='Time length to split by if desired', required=False, default='std')
 parser.add_argument('-f', '--file', help='Type of file read: "csv", "dir"', required=False, default='csv')
 parser.add_argument('-l', '--label', help='Label for dataset', required=True)
+parser.add_argument('-m', '--malware', help='Record data for targeted IP address only', required=False)
+parser.add_argument('-p', '--protocol', help='Record data for targeted IP address only', required=False)
+parser.add_argument('-s', '--sleep', help='Record data for targeted IP address only', required=False)
+parser.add_argument('-j', '--jitter', help='Record data for targeted IP address only', required=False)
+
 parser.add_argument('-d', '--dataset', help='Dataset name', required=True)
 parser.add_argument('-o', '--owner', help='Owner name', required=True)
 parser.add_argument('-a', '--append', help='If set, appends to existing csv', required=False, action='store_true')
 parser.add_argument('-z', '--target', help='Record data for targeted IP address only', required=False)
-parser.add_argument('-y', '--labelList', help='Record data for targeted IP address only', required=False)
-parser.add_argument('-x', '--ipLabel', help='Record data for targeted IP address only', required=False, action='store_true')
+
+
+parser.add_argument('-y', '--labelList', help='label ._____ as Good', required=False)
+parser.add_argument('-x', '--ipLabel', help='ipOnly label', required=False, action='store_true')
 
 args = vars(parser.parse_args())
 
@@ -594,6 +632,12 @@ csvOne = 'output.csv'
 csvTwo = 'output2.csv'
 
 label = args['label']
+protocol = args['protocol']
+malware = args['malware']
+sleep = args['sleep']
+jitter = args['jitter']
+
+
 dataset = args['dataset']
 owner = args['owner']
 target = args['target']
