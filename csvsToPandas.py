@@ -662,7 +662,6 @@ def DNSdictionaryEnricher(magicDictionary):
                 listOfListOfFeatures[6] = 0  # set = 0
             listOfListOfFeatures[7] = stats.skew(k)  # skew
             listOfListOfFeatures[8] = stats.kurtosis(k)  # kurtosis
-            print(listOfListOfFeatures)
             statisticsArray.append(listOfListOfFeatures)
 
         flatList = [item for sublist in statisticsArray for item in sublist]
@@ -911,7 +910,6 @@ def enrichedArrayToDataFrame(SUPAHARRAY, labelFlag):
         'dnsDataLengthTotal',
         'dnsToTcpRatio'
     ]
-    print(len(cols))
 
     df.columns = cols
     if labelFlag == 1:
@@ -985,6 +983,7 @@ parser.add_argument('-w', '--write', help='Filename of the csv to write', requir
 parser.add_argument('-t', '--time', help='Time length to split by if desired', required=False, default='std')
 parser.add_argument('-f', '--file', help='Type of file read: "csv", "dir"', required=False, default='csv')
 parser.add_argument('-l', '--label', help='Label for dataset', required=True)
+
 parser.add_argument('-m', '--malware', help='Record data for targeted IP address only', required=False)
 parser.add_argument('-p', '--protocol', help='Record data for targeted IP address only', required=False)
 parser.add_argument('-s', '--sleep', help='Record data for targeted IP address only', required=False)
