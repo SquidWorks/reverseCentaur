@@ -161,12 +161,12 @@ def enrichToDictionary(csvName):
                 print("WE IN HERE")
 
                 subdomainName = ''
-                subdomainDepth = "na"
-                subdomainLength = "na"
-                subdomainEntropy = "na"
-                subdomainBigram = "na"
-                domainEntropy = "na"
-                domainBigram = "na"
+                subdomainDepth = 0
+                subdomainLength = 0
+                subdomainEntropy = 0
+                subdomainBigram = 0
+                domainEntropy = 0
+                domainBigram = 0
 
             else:
                 domainNameFull = domain2ip[i[2]][0]
@@ -187,22 +187,22 @@ def enrichToDictionary(csvName):
             subdomainName = ''
 
             domainNameJoined = 'none'
-            subdomainDepth = "na"
-            subdomainLength = "na"
-            subdomainEntropy = "na"
-            subdomainBigram = "na"
-            domainEntropy = "na"
-            domainBigram = "na"
+            subdomainDepth = 0
+            subdomainLength = 0
+            subdomainEntropy = 0
+            subdomainBigram = 0
+            domainEntropy = 0
+            domainBigram = 0
 
         try:
             bytesPerFrameFrom = float(i[5]) / float(i[4])
         except:
-            bytesPerFrameFrom = 'na'
+            bytesPerFrameFrom = 0
 
         try:
             bytesPerFrameTo = float(i[7]) / float(i[6])
         except:
-            bytesPerFrameTo = 'na'
+            bytesPerFrameTo = 0
 
         newI.insert(4, subdomainDepth)
         newI.insert(4, subdomainLength)
@@ -307,12 +307,12 @@ def dictionaryEnricher(magicDictionary):
                 bytesTotalTotal += float(j[19])
                 timeList.append(float(j[20]))
             except:
-                break
+                continue
 
         ipAddress = j[2]
         if target:
             if target != ipAddress:
-                break
+                continue
 
         domainLabel = label
 
@@ -320,29 +320,33 @@ def dictionaryEnricher(magicDictionary):
             if domainName == "none":
                 domainLabel = "ipOnly"
 
+
         if labelList:
+            print(domainName.split(".")[-1])
+            print(labelList)
             if labelList == domainName.split(".")[-1]:
-                domainLabel = "Good"
+                #domainLabel = "Good"
+                continue
 
         if protocol:
             protocolLabel = protocol
         else:
-            protocolLabel = "na"
+            protocolLabel = 0
 
         if malware:
             malwareLabel = malware
         else:
-            malwareLabel = "na"
+            malwareLabel = 0
 
         if sleep:
             sleepLabel = sleep
         else:
-            sleepLabel = "na"
+            sleepLabel = 0
 
         if jitter:
             jitterLabel = jitter
         else:
-            jitterLabel = "na"
+            jitterLabel = 0
 
 
         deltaTimeList = [j - i for i, j in zip(timeList[:-1], timeList[1:])]
@@ -371,7 +375,7 @@ def dictionaryEnricher(magicDictionary):
         # [9] = bytesPerFrame
         for k in listOfArrays:
             listOfListOfFeatures = [[]] * 9
-            if k and k[0] != "na":
+            if k and k[0] != 0:
 
                 listOfListOfFeatures[0] = float(sum(k) / (len(k)))  # Average
                 listOfListOfFeatures[1] = min(k)  # min
@@ -382,15 +386,15 @@ def dictionaryEnricher(magicDictionary):
                     listOfListOfFeatures[4] = 0  # set = 0
                 listOfListOfFeatures[5] = stats.entropy(k)  # entropy
                 if math.isnan(listOfListOfFeatures[5]):  # if is not a number
-                    listOfListOfFeatures[4] = "na"  # set = 0
-                    listOfListOfFeatures[5] = "na"  # set = 0
+                    listOfListOfFeatures[4] = 0  # set = 0
+                    listOfListOfFeatures[5] = 0  # set = 0
                 listOfListOfFeatures[6] = stats.variation(k)  # variation
                 if math.isnan(listOfListOfFeatures[6]):  # if is not a number
-                    listOfListOfFeatures[6] = "na"  # set = 0
+                    listOfListOfFeatures[6] = 0  # set = 0
                 listOfListOfFeatures[7] = stats.skew(k)  # skew
                 listOfListOfFeatures[8] = stats.kurtosis(k)  # kurtosis
             else:
-                listOfListOfFeatures = ["na"] * 9
+                listOfListOfFeatures = [0] * 9
 
             statisticsArray.append(listOfListOfFeatures)
 
