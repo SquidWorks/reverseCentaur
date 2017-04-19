@@ -83,20 +83,22 @@ for i in allFiles:
     fileName = i.rsplit('.', 1)[:-1][0]
     #dirPath = i.rsplit('/', 1)[:-1][0]
     #print(dirPath)
-    cmd = 'tshark -nr '+ fileName + ' -N -Y "(ip.addr== 10.1.70.20) and  (ip.addr!= 10.1.70.40 or ip.addr!= 10.1.70.41 or ip.addr!= 10.1.70.42 or ip.addr!= 10.1.70.43) and (! ldap or ! ftp or ! tpkt) and (dns or tcp)" -w temporary.pcap'
+    cmd = 'tshark -r '+ fileName + ' -Y "(ip.addr== 10.1.70.20) and  (ip.addr!= 10.1.70.40 or ip.addr!= 10.1.70.41 or ip.addr!= 10.1.70.42 or ip.addr!= 10.1.70.43) and (! ldap or ! ftp or ! tpkt) and (dns or tcp)" -w temporary.pcap'
     print("****" + cmd)
     p = Popen(cmd, shell=True, stdin=PIPE, stdout=PIPE, stderr=STDOUT, close_fds=True)
-    print(p).stdout.readlines()
+    #print(p).stdout.readlines()
     newT = time.time()
     print(newT - start)
     cmd = "python pcapToCsvs.py -r temporary.pcap -w tempTcp.csv -wd tempDNS.csv"
     p = Popen(cmd, shell=True, stdin=PIPE, stdout=PIPE, stderr=STDOUT, close_fds=True)
+    #print(p).stdout.readlines()
     print("****" + cmd)
-    print(p).stdout.readlines()
+    newT = time.time()
+    print(newT - start)
     cmd = "python csvsToPandas.py -r tempTcp.csv -rd tempDNS.csv -w "+ outputCsvTcp + " -l "+ label + " -d " + dataset + " -o " + owner + string
     p = Popen(cmd, shell=True, stdin=PIPE, stdout=PIPE, stderr=STDOUT, close_fds=True)
     print("****" + cmd)
-    print(p).stdout.readlines()
+    #print(p).stdout.readlines()
     #newT = time.time()
     #print(newT - start)
 
