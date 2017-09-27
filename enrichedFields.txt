@@ -192,3 +192,7 @@ Primary Domain:
           # Do you make a fuckton of DNS requests and no http requests?  DNS BACKCHANNEL!
 
 Are you domain fronting???? Asshole.
+Destination ports!!!
+Source ports? 
+Some more information about source computer? I'd love to be able to throw a config file in that enriches about source.
+IP to IP connections
