@@ -1,3 +1,8 @@
+""" This is the script which enriches the pre-processed pcap data that is now chilling in csvs. 
+It is very ugly, but I have a really sexy fork that will be merged soon that makes this much more attractive.
+
+Hint: It allows for arbitrary data enrichment. """
+
 import argparse
 import csv
 import glob
@@ -10,10 +15,11 @@ from scipy import stats
 
 
 def dictionaryMaker(csvOne, csvTwo):
+    # this function creates the domain name/ip address pairs used to group things
     f = open(csvOne)
     csv_f = csv.reader(f)
     domain2ip = defaultdict(dict)
-
+    
     for row in csv_f:
         if len(row[0]) < 25:
             pass
@@ -72,6 +78,7 @@ def dictionaryMaker(csvOne, csvTwo):
 
 
 def likelihoodsMake():
+    # I won't explain how this works, just google what a bigram is.
     likelihood_file = "likelihoods.txt"
     bigram_file = "bigrams.txt"
 
@@ -95,6 +102,7 @@ def likelihoodsMake():
 
 
 def bigramQuery(field):
+    # same as for likelihoodsmake. It's for creating bigrams
     if len(field) > 1:
         for k in range(len(field) - 1):
             this_ltr = field[k]
@@ -111,12 +119,14 @@ def bigramQuery(field):
 
 
 def entropy(s):
+    # this is a very very basic entropy calculator.
     p, lns = Counter(s), float(len(s))
     return -sum(count / lns * math.log(count / lns, 2) for count in p.values())
 
 
 def domainEnrich(domainNameFull):
-    subdomainName = domainNameFull.split(".")[:-2]
+    # takes in a domain name, breaks it into a fuckton of useful parts. self explanatory.
+     subdomainName = domainNameFull.split(".")[:-2]
 
     subdomainNameJoined = (''.join(subdomainName)).lower()
 
@@ -129,8 +139,8 @@ def domainEnrich(domainNameFull):
 
     subdomainEntropy = entropy(subdomainNameJoined)
 
-    subdomainNameJoined = subdomainNameJoined
-
+    subdomainNameJoined = subdomainNameJoined #why was this in here? Not gonna delete
+    
     field = subdomainNameJoined.translate(None, '0123456789-')  # PROBLEM CHILD
     subdomainBigram = bigramQuery(field)
 
@@ -143,6 +153,7 @@ def domainEnrich(domainNameFull):
 
 
 def enrichToDictionary(csvName):
+    # So not optimized it hurts, but goddamn it gets the job done. 
     with open(csvName, 'rb') as f:
         reader = csv.reader(f)
         bigArray = list(reader)
@@ -234,6 +245,9 @@ def enrichToDictionary(csvName):
 
 
 def dictionaryEnricher(magicDictionary, DNSdict):
+    # ughhh it is so ugly.... don't worry about how it works, it will be fixed, eventually, when I have spare time. 
+    # I have too many goddamn side projects. 
+    
     SUPAHARRAY = []
 
     for i in magicDictionary:
@@ -850,6 +864,7 @@ def enrichedArrayToDataFrame(SUPAHARRAY, labelFlag):
         'subdomainDepthSkew',
         'subdomainDepthKurtosis',
         """
+        # I removed all of these because they didn't contribute much and were confusing. 
         'primarySubdomainBigramAvg',
         'primarySubdomainBigramMin',
         'primarySubdomainBigramMax',
