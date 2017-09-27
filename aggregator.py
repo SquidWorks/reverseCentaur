@@ -1,3 +1,7 @@
+""" This is a hacked together script for bulk aggregation and loading of a fuckton of bzipped packet
+captures. Modify it to whatever your fuckton of packet captures looks like. Pretty self explanatory """
+
+
 import os
 from subprocess import Popen, PIPE, STDOUT
 import argparse
@@ -15,17 +19,19 @@ parser.add_argument('-l', '--label', help='Label for dataset', required=True)
 parser.add_argument('-d', '--dataset', help='Dataset name', required=True)
 parser.add_argument('-o', '--owner', help='Owner name', required=True)
 
-parser.add_argument('-m', '--malware', help='Record data for targeted IP address only', required=False)
-parser.add_argument('-p', '--protocol', help='Record data for targeted IP address only', required=False)
-parser.add_argument('-s', '--sleep', help='Record data for targeted IP address only', required=False)
-parser.add_argument('-j', '--jitter', help='Record data for targeted IP address only', required=False)
+parser.add_argument('-m', '--malware', help='name of the piece of malware', required=False)
+parser.add_argument('-p', '--protocol', help='name of the protocol it talks over', required=False)
+parser.add_argument('-s', '--sleep', help='sleep length', required=False)
+parser.add_argument('-j', '--jitter', help='jitter amount', required=False)
 
 parser.add_argument('-a', '--append', help='If set, appends to existing csv', required=False, action='store_true')
 parser.add_argument('-z', '--target', help='Record data for targeted IP address only', required=False)
 
 
 parser.add_argument('-y', '--labelList', help='label ._____ as Good', required=False)
+# sorry, totally forgot what this meant
 parser.add_argument('-x', '--ipLabel', help='ipOnly label', required=False, action='store_true')
+# sorry totally forgot what this meant
 
 args = vars(parser.parse_args())
 
@@ -75,6 +81,7 @@ allFiles = glob.glob(dirName+ "/*/*.bz2")
 
 for i in allFiles:
     cmd = 'bzip2 -dk '+i
+    # Most likely, the pcaps will all be bzipped together (its how security onion does it)
     p = Popen(cmd, shell=True, stdin=PIPE, stdout=PIPE, stderr=STDOUT, close_fds=True)
     print("****" + cmd)
     print(p).stdout.readlines()
@@ -85,17 +92,20 @@ for i in allFiles:
     #print(dirPath)
     cmd = 'tshark -r '+ fileName + ' -Y "(ip.addr== 10.1.70.20) and  (ip.addr!= 10.1.70.40 or ip.addr!= 10.1.70.41 or ip.addr!= 10.1.70.42 or ip.addr!= 10.1.70.43) and (! ldap or ! ftp or ! tpkt) and (dns or tcp)" -w temporary.pcap'
     print("****" + cmd)
+    # This tshark filters out all the internal ips
     p = Popen(cmd, shell=True, stdin=PIPE, stdout=PIPE, stderr=STDOUT, close_fds=True)
     #print(p).stdout.readlines()
     newT = time.time()
     print(newT - start)
     cmd = "python pcapToCsvs.py -r temporary.pcap -w tempTcp.csv -wd tempDNS.csv"
+    # this calls the pcapToCsvs python script
     p = Popen(cmd, shell=True, stdin=PIPE, stdout=PIPE, stderr=STDOUT, close_fds=True)
     #print(p).stdout.readlines()
     print("****" + cmd)
     newT = time.time()
     print(newT - start)
     cmd = "python csvsToPandas.py -r tempTcp.csv -rd tempDNS.csv -w "+ outputCsvTcp + " -l "+ label + " -d " + dataset + " -o " + owner + string
+   
     p = Popen(cmd, shell=True, stdin=PIPE, stdout=PIPE, stderr=STDOUT, close_fds=True)
     print("****" + cmd)
     #print(p).stdout.readlines()
