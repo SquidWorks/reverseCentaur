@@ -1,0 +1,194 @@
+Read the wiki article on what shannon entropy is to understand what is needed to encode something.
+
+'domainName', 
+  The domain name.
+'ipAddress',
+  The IP address that goes with the domain name
+'label',
+  Basic manual label. Good, bad, unknown.
+'protocolLabel',
+  What is the protocol. Manually labeled/ 
+'malwareLabel',
+  What is the name of the type of malware. Manual.
+'sleepLabel',
+  What is the sleep time? Manual. 
+'jitterLabel',
+  What is the jitter percentage? Manual.
+'dataset',
+  What dataset did this come from?
+'owner',
+  Who did the labeling?
+'count',
+ What is the total number of connection made to this domain?
+'fqdns',
+ What is the total number of qualified domain names at this domain?
+Domain:
+  Entropy:
+        'domainEntropy',
+          What is the entropy of the domain name (does not include tld)
+            This is particularly useful for identifying DGA callbacks, as usually those are random looking strings.
+  Bigram:       
+        'domainBigram',
+          What is the bigram probability of the domain name (does not include tld)
+            This is particularly useful for identifying DGA callbacks, as usually those are random looking strings.
+  tld: 
+       ((( THIS DOESN'T EXIST YET, BUT SHOULD )))) One Hot this time.
+          
+Subdomain: Any field using subdomain runs some math against an array of all of the subdomains for a specific domain.
+  Bigram: 
+        'subdomainBigramAvg',
+        'subdomainBigramMin',
+        'subdomainBigramMax',
+        'subdomainBigramMode',
+        'subdomainBigramModeCount',
+        'subdomainBigramEntropy',
+        'subdomainBigramVariation',
+        'subdomainBigramSkew',
+        'subdomainBigramKurtosis',
+  Entropy:        
+        'subdomainEntropyAvg',
+        'subdomainEntropyMin',
+        'subdomainEntropyMax',
+        'subdomainEntropyMode',
+        'subdomainEntropyModeCount',
+        'subdomainEntropyEntropy',
+        'subdomainEntropyVariation',
+        'subdomainEntropySkew',
+        'subdomainEntropyKurtosis',
+  Length:        
+        'subdomainLengthAvg',
+          The longer your subdomain names, the less requests you need to make if you are encoding things in them.
+        'subdomainLengthMin',
+        'subdomainLengthMax',
+          The longer your subdomain names, the less requests you need to make if you are encoding things in them.        
+        'subdomainLengthMode',
+        'subdomainLengthModeCount',
+          Do you have a bunch of different subdomain names with different lengths? ENCODED
+        'subdomainLengthEntropy',
+          Does the length only change a little? ENCODED
+        'subdomainLengthVariation',
+        'subdomainLengthSkew',
+        'subdomainLengthKurtosis',
+  Depth:      
+        'subdomainDepthAvg',
+          Is it oddly deep? 
+        'subdomainDepthMin',
+        'subdomainDepthMax',
+        'subdomainDepthMode',
+        'subdomainDepthModeCount',
+          Are a bunch the same depth?
+        'subdomainDepthEntropy',
+        'subdomainDepthVariation',
+        'subdomainDepthSkew',
+        'subdomainDepthKurtosis',
+  Frames From:      
+        'framesFromAvg',
+        'framesFromMin',
+        'framesFromMax',
+        'framesFromMode',
+        'framesFromModeCount',
+        'framesFromEntropy',
+        'framesFromVariation',
+        'framesFromSkew',
+        'framesFromKurtosis',
+  Bytes From:      
+        'bytesFromAvg',
+        'bytesFromAMin',
+        'bytesFromAMax',
+        'bytesFromAMode',
+        'bytesFromAModeCount',
+        'bytesFromAEntropy',
+        'bytesFromAVariation',
+        'bytesFromASkew',
+        'bytesFromAKurtosis',
+  Bytes per frame From:
+        'bytesPerFrameFromAvg',
+        'bytesPerFrameFromMin',
+        'bytesPerFrameFromMax',
+        'bytesPerFrameFromMode',
+        'bytesPerFrameFromModeCount',
+        'bytesPerFrameFromEntropy',
+        'bytesPerFrameFromVariation',
+        'bytesPerFrameFromSkew',
+        'bytesPerFrameFromKurtosis',
+  Frames To:      
+        'framesToAvg',
+        'framesToMin',
+        'framesToMax',
+        'framesToMode',
+        'framesToModeCount',
+        'framesToEntropy',
+        'framesToVariation',
+        'framesToSkew',
+        'framesToKurtosis',
+  Bytes To:      
+        'bytesToAvg',
+        'bytesToMin',
+        'bytesToMax',
+        'bytesToMode',
+        'bytesToModeCount',
+        'bytesToEntropy',
+        'bytesToVariation',
+        'bytesToSkew',
+        'bytesToKurtosis',
+        'bytesPerFrameToAvg',
+        'bytesPerFrameToMin',
+        'bytesPerFrameToMax',
+        'bytesPerFrameToMode',
+        'bytesPerFrameToModeCount',
+        'bytesPerFrameToEntropy',
+        'bytesPerFrameToVariation',
+        'bytesPerFrameToSkew',
+        'bytesPerFrameToKurtosis',
+Time:
+  Delta:
+        'timeDeltaAvg',
+        'timeDeltaMin',
+        'timeDeltaMax',
+        'timeDeltaMode',
+        'timeDeltaModeCount',
+        'timeDeltaEntropy',
+        'timeDeltaVariation',
+        'timeDeltaSkew',
+        'timeDeltaKurtosis',
+        
+        'framesFromTotal',
+        'bytesFromTotal',
+        'framesToTotal',
+        'bytesToTotal',
+        'framesTotalTotal',
+        'bytesTotalTotal',
+        
+        'count',
+        'fqdns',
+        'primaryfqdns',
+        'ips
+Dns:        
+  Data Length:     
+       'dnsDataLengthAvg',
+        'dnsDataLengthMin',
+        'dnsDataLengthMax',
+        'dnsDataLengthMode',
+        'dnsDataLengthCount',
+        'dnsDataLengthEntropy',
+        'dnsDataLengthVariation',
+        'dnsDataLengthSkew',
+        'dnsDataLengthKurtosis',
+  Time:
+        'dnsTimeDeltaAvg',
+        'dnsTimeDeltaMin',
+        'dnsTimeDeltaMax',
+        'dnsTimeDeltaMode',
+        'dnsTimeDeltaModeCount',
+        'dnsTimeDeltaEntropy',
+        'dnsTimeDeltaVariation',
+        'dnsTimeDeltaSkew',
+        'dnsTimeDeltaKurtosis',
+Primary Domain:        
+        'primaryDomainEntropy',
+        'primaryDomainBigram',        
+        'dnsDataLengthTotal',
+        'dnsToTcpRatio'
+          # Do you make a fuckton of DNS requests and no http requests?  DNS BACKCHANNEL!
+
+Are you domain fronting???? Asshole.
