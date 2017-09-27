@@ -10,28 +10,28 @@ import os
 Why did I do it like this you might ask? I was feeling lazy and knew tshark would be super easy to get started with. #noregrets"""
 
 def readPcapToDNSCSV(fileName, csvName):
-
+    # This one is for pulling out all the dns logs
+    
     cmd = "tshark -E occurrence=f -nr " + fileName + " -Nn -T fields -e ip.src -e dns.resp.name -e dns.resp.addr -e dns.resp.len -e dns.resp.primaryname -e frame.time_epoch -Y 'dns.flags.response == 1 && dns.resp.name && dns.qry.type == 0x0001' >> " + csvName
     p = Popen(cmd, shell=True, stdin=PIPE, stdout=PIPE, stderr=STDOUT, close_fds=True)
 
 def readPcapToCSV(fileName, csvName):
 
-
     print(fileName + " Started:")
     cmd = "tshark -r " + fileName + "-R 'tcp' -w " + fileName
     p = Popen(cmd, shell=True, stdin=PIPE, stdout=PIPE, stderr=STDOUT, close_fds=True)
-
+    # This command pulls out all the tcp logs 
     cmd = "tshark -r " + fileName + " -T fields -e frame.time_relative -e frame.time_epoch -Y 'frame.time_relative==0.000000000'"
     p = Popen(cmd, shell=True, stdin=PIPE, stdout=PIPE, stderr=STDOUT, close_fds=True)
-
+    # this command pulls out the start time
     timeStart = p.stdout.read().strip().split("\t")[1]
     fixed= timeStart.split("\n")[0]
     #print("Time")
 
-
     bigArray = []
     commandString = "tshark -r " + fileName + " -q -z conv,tcp,"
     p = Popen(commandString, shell=True, stdin=PIPE, stdout=PIPE, stderr=STDOUT, close_fds=True)
+    # this command pulls out the conversation data from the pcap
     output = p.stdout.readlines()
     for line in output:
 
@@ -40,27 +40,33 @@ def readPcapToCSV(fileName, csvName):
             out = [x for x in hello if x]
             out3 = out[0].split(":") + out[2].split(":") + out[3:-2] + [float(out[-2])+float(fixed)]+ [out[-1].rstrip()]
             bigArray.append(out3)
-
+            # makes it pretty
         except:
             errorHandlingIsForScrubs = "I Ain't No Scrub"
-
+            # fuck clean error handling
     sortedArray = sorted(bigArray,key=lambda x: x[10])
-
+    # your boy has lambdas but doesnt do error handling..
     with open(csvName, "a") as f:
         writer = csv.writer(f)
         writer.writerows(sortedArray)
+        # this writes all the rows in the array into a file. It just makes things easier to understand and lets you save stuff for later
 
 def cleanPcap(pcapFile):
+    # This doesn't get called anymore, but I left it in anyway.
+    
     commandString = "pcapfix " + pcapFile
+    # pcapfix is a command line program that unfucks pcaps... shocker. useful for not needing error checking. its a dependency. 
     p = Popen(commandString, shell=True, stdin=PIPE, stdout=PIPE, stderr=STDOUT, close_fds=True)
     output = p.stdout.readlines()
     #print(output + "*")
 
     try:
         commandString = "editcap -c 1000 " + "fixed_" + pcapFile + " " + pcapFile
+        # why do I  have editcap? a few months later, I have no idea. I remember thinking it sped things up a bit
         p = Popen(commandString, shell=True, stdin=PIPE, stdout=PIPE, stderr=STDOUT, close_fds=True)
         output = p.stdout.readlines()
         #print(output)
+        
 
     except:
         commandString = "editcap -c 1000 " + pcapFile + " " + "Split" +pcapFile
