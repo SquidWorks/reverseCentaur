@@ -5,6 +5,10 @@ import glob
 import argparse
 import os
 
+
+""" This is a pre-processor for packet captures that takes in the data and parses it... think of it like a very shitty Bro. 
+Why did I do it like this you might ask? I was feeling lazy and knew tshark would be super easy to get started with. #noregrets"""
+
 def readPcapToDNSCSV(fileName, csvName):
 
     cmd = "tshark -E occurrence=f -nr " + fileName + " -Nn -T fields -e ip.src -e dns.resp.name -e dns.resp.addr -e dns.resp.len -e dns.resp.primaryname -e frame.time_epoch -Y 'dns.flags.response == 1 && dns.resp.name && dns.qry.type == 0x0001' >> " + csvName
@@ -93,16 +97,20 @@ def cleanAndReadPcap(fileName, csvName, DNScsvname):
 
 
 
-start = time.time()
+# start = time.time()
+# I have time in for debugging purposes, gives me a good idea of how long shit can take
 
 parser = argparse.ArgumentParser(description="provide the parameters to make the file run")
+# Of all the argument parsers out there, I like argparse. Sue me.
 parser.add_argument("-r", "--read", help='Enter the filename of the packet capture to read', required=True)
 
 parser.add_argument('-w','--write', help='Enter the filename of the csv to write', required=True)
+
 parser.add_argument('-wd','--writedns', help='Enter the filename of the DNS csv to write', required=True)
 
 parser.add_argument('-t','--type', help='Enter type of file: "file", "live", or "dir"', required=False, default='file')
-
+# file is....a  single file! live means it is a live capture and is actively growing (that is broken... whatevs)
+# dir means you are loading a directory and it will take the name of the directory you want to load all at once
 args = vars(parser.parse_args())
 
 fileName = args['read']
@@ -112,6 +120,7 @@ DNScsvName = args['writedns']
 
 if args['type'] == "live":
     print("BROKEN")
+    # I told you it was broken
 
 elif args['type'] == "dir":
     allFiles = glob.glob(fileName+ "/*.pcap*")
@@ -126,5 +135,6 @@ else:
     print("Use -h to figure it out")
 
 
-end = time.time()
-print(end - start)
+# end = time.time()
+# timer stuff
+# print(end - start)
