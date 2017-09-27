@@ -196,3 +196,5 @@ Destination ports!!!
 Source ports? 
 Some more information about source computer? I'd love to be able to throw a config file in that enriches about source.
 IP to IP connections
+
+Once there are multiple types of logs, Wackness level for a computer compared to baseline. 
